@@ -3,7 +3,7 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import App from './App.vue'
 import axios from 'axios'
-
+// import 'font-awesome/css/font-awesome.min.css'
 import router from './router' // 确保路径正确
 
 const app = createApp(App)

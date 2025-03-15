@@ -40,6 +40,7 @@
               inputmode="latin"
               @compositionstart="disableIME"
               @compositionend="disableIME"
+
           ><!-- 使用 Font Awesome 的锁图标 -->
           <span class="icon-lock"><i class="fas fa-lock"></i></span>
           <!-- 添加密码显示切换按钮 -->
@@ -49,13 +50,15 @@
           <!-- 密码强度显示 -->
           <div class="password-strength-wrapper">
             <div class="password-strength">
-              <div class="strength-bar" :class="strengthClass" :style="{ width: strengthWidth }"></div>
+              <div class="strength-bar" :class="[strengthClass, { 'invalid': strengthClass === 'none' }]"
+                   :style="{ width: strengthWidth }"></div>
             </div>
-            <span class="strength-text">{{ passwordStrength }}</span>
+            <span class="strength-text" :class="{ 'invalid-text': strengthClass === 'none' }">{{
+                passwordStrength
+              }}</span>
           </div>
 
         </div>
-
         <div class="form-item captcha-item" ref="captchaInput">
           <input
               v-model="registerForm.captcha"
@@ -65,7 +68,7 @@
               :src="captchaUrl"
               class="captcha-img"
               @click="refreshCaptcha"
-          >
+              alt="">
           <transition name="fade">
             <div v-if="captchaError" class="error-tip">
               <i class="fas fa-exclamation-triangle"></i>
@@ -92,7 +95,6 @@
               type="text"
               v-model="loginForm.username"
               placeholder="用户名"
-              @blur="validLoginUsername"
           >
           <!-- 直接使用 Font Awesome 图标 -->
           <span class="icon-user"><i class="fas fa-user"></i></span>
@@ -119,8 +121,6 @@
         <button type="submit" class="submit-btn">立即登录</button>
         <!-- 第三方登录？ -->
       </form>
-
-
       <!-- 底部链接 -->
       <div class="footer-links">
         <a href="/about">关于我们</a>
@@ -152,11 +152,11 @@ export default {
       showPassword: false,
       // 修改后的强度等级配置
       strengthLevels: [
-        {class: 'none', text: '密码不可用', width: '0'},
-        {class: 'weak', text: '密码强度：弱', width: '20%'},
-        {class: 'medium', text: '密码强度：中', width: '50%'},
-        {class: 'strong', text: '密码强度：强', width: '80%'},
-        {class: 'very-strong', text: '密码强度：非常强', width: '100%'}
+        {class: 'none', text: '密码不可用，😭', width: '0'},
+        {class: 'weak', text: '密码强度：弱，😥', width: '20%'},
+        {class: 'medium', text: '密码强度：中，😀', width: '50%'},
+        {class: 'strong', text: '密码强度：强，😄', width: '80%'},
+        {class: 'very-strong', text: '密码强度：非常强，😊', width: '100%'}
       ],
       loginForm: {
         username: '',
@@ -167,9 +167,10 @@ export default {
         password: '',
         captcha: ''
       },
-      passwordStrength: '密码不可用',
+      passwordStrength: '',
       strengthClass: 'none', strengthWidth: '0',
       userNameMessage: '',
+      userNameError: ''
     }
   },
   methods: {
@@ -179,28 +180,33 @@ export default {
     // 用户名校验方法
     async validUsername() {
       const username = this.registerForm.username
-
       // 格式校验
       if (!/^[a-zA-Z0-9_]{4,20}$/.test(username)) {
         this.userNameMessage = '用户名需为4-20位字母、数字或下划线'
+        this.userNameError = '用户名需为4-20位字母、数字或下划线'
         return
       }
-      this.userNameMessage = '';
-
-      // // 检查用户名是否存在
-      // try {
-      //   this.isCheckingUsername = true
-      //   const res = await this.$http.get(`/user/check?username=${username}`)
-      //   this.isUsernameAvailable = !res.data.exists
-      //   if (!this.isUsernameAvailable) {
-      //     this.userNameMessage = '该用户名已被注册，暂不可用'
-      //   }
-      //   this.userNameMessage = '可用＜（＾－＾）＞'
-      // } catch (err) {
-      //   this.$message.error('用户名检查失败')
-      // } finally {
-      //   this.isCheckingUsername = false
-      // }
+      this.userNameError = ''
+      //用户名是否被注册
+      try {
+        const res = await this.$http.get(`/users/check-username?username=${username}`)
+        if (res.data.exists) {
+          this.userNameMessage = '该用户名已被注册😭'
+          this.userNameError = '该用户名已被注册😭'
+        } else {// 格式校验
+          if (!/^[a-zA-Z0-9_]{4,20}$/.test(username)) {
+            this.userNameMessage = '用户名需为4-20位字母、数字或下划线'
+            this.userNameError = '用户名需为4-20位字母、数字或下划线'
+            return
+          }
+          this.userNameMessage = '用户名可用😀'
+          this.userNameError = ''
+        }
+      } catch (err) {
+        this.userNameMessage = '检查失败，请重试'
+        this.userNameError = '检查失败，请重试'
+        console.error('用户名检查错误:', err)
+      }
     },
     togglePassword() {
       this.showPassword = !this.showPassword;
@@ -208,8 +214,12 @@ export default {
     //登录处理
     async handleLogin() {
       // 前端基础校验
-      if (!this.loginForm.username || !this.loginForm.password) {
-        this.$message.error('用户名和密码不能为空');
+      if (!this.loginForm.username) {
+        this.$message.error('用户名不能为空');
+        return;
+      }
+      if (!this.loginForm.password) {
+        this.$message.error('密码不能为空');
         return;
       }
 
@@ -224,14 +234,14 @@ export default {
         localStorage.setItem('userInfo', JSON.stringify(res.data));
 
         // 跳转到首页
-        this.$router.push('/my'); // 修改这里
+        this.$router.push('/my');
       } catch (err) {
         // 处理错误信息
         const errorMsg = err.response?.data?.message || '登录失败';
         if (errorMsg.includes('用户不存在')) {
-          this.$message.error('用户名不存在');
+          this.$message.error('用户名不存在，😭');
         } else if (errorMsg.includes('密码错误')) {
-          this.$message.error('密码不正确');
+          this.$message.error('密码不正确，😭');
         } else {
           this.$message.error(errorMsg);
         }
@@ -245,17 +255,17 @@ export default {
 
       // 基础校验
       if (password.length < 6) {
-        this.passwordStrength = '密码不可用'
+        this.passwordStrength = '密码长度不能小于6位'
         this.strengthClass = 'none'
         this.strengthWidth = '0'
-        this.passwordError = '密码长度不能小于6位'
+        this.passwordError = '密码不可用'
         return
       }
       if (!/\d/.test(password) || !/[a-zA-Z]/.test(password)) {
-        this.passwordStrength = '密码不可用'
+        this.passwordStrength = '密码必须同时包含字母和数字'
         this.strengthClass = 'none'
         this.strengthWidth = '0'
-        this.passwordError = '密码必须同时包含字母和数字'
+        this.passwordError = '密码不可用'
         return
       }
       this.passwordError = ''
@@ -280,11 +290,11 @@ export default {
       // 用户名校验
       if (!this.registerForm.username) {
         this.userNameMessage = '请输入用户名';
+        this.userNameError = '请输入用户名'
         this.triggerShake('username');
         return;
       }
-      if (this.userNameMessage) {
-        this.userNameMessage = '用户名不可用，请检查';
+      if (this.userNameError) {
         this.triggerShake('username');
         return;
       }

@@ -53,7 +53,8 @@
 
 .form-item {
     position: relative;
-    margin-bottom: 25px;transform: translateZ(0);
+    margin-bottom: 25px;
+    transform: translateZ(0);
 }
 
 .form-item input {
@@ -142,6 +143,7 @@ input:focus {
 .very-strong {
     background: #00C851;
 }
+
 .captcha-item {
     margin-bottom: 28px;
 }
@@ -223,10 +225,15 @@ input:focus {
     margin-top: 8px;
     animation: fadeIn 0.3s ease;
 }
+
+.invalid-text {
+    color: #ff4d4f !important;
+}
+
 .captcha-text {
-        color: #e74c3c;
-        display: block;
-        animation: fadeIn 0.3s ease;
+    color: #e74c3c;
+    display: block;
+    animation: fadeIn 0.3s ease;
 }
 
 /* 动态强度条样式 */
@@ -234,6 +241,11 @@ input:focus {
     height: 100%;
     width: 100%;
     transition: all 0.3s ease;
+}
+
+/* 无效状态样式 */
+.strength-bar.invalid {
+    background-color: #ff4d4f !important;
 }
 
 .weak {

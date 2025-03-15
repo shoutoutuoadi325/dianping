@@ -1,4 +1,3 @@
-// router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 import AuthPage from '@/views/AuthPage.vue'
 import My from '@/views/My.vue'
@@ -18,6 +17,22 @@ const routes = [
     name: 'My',
     component: My,
     meta: { requiresAuth: true } // 需要登录才能访问
+  },
+  {
+    path: '/nearby-food',
+    component: () => import('@/views/NearbyFood.vue')
+  },
+  {
+    path: '/add-review',
+    component: () => import('@/views/AddReview.vue')
+  },
+  {
+    path: '/life-zone',
+    component: () => import('@/views/LifeZone.vue')
+  },
+  {
+    path: '/user-info',
+    component: () => import('@/views/UserInfo.vue')
   }
 ]
 
@@ -37,51 +52,3 @@ router.beforeEach((to, from, next) => {
 })
 
 export default router
-// import { createRouter, createWebHashHistory } from 'vue-router'
-// import HomeView from '../views/HomeView.vue'
-//
-// const routes = [
-//   {
-//     path: '/home',
-//     name: 'HomeView',
-//     component: HomeView
-//   },
-//   {
-//     path: '/about',
-//     name: 'about',
-//     // route level code-splitting
-//     // this generates a separate chunk (about.[hash].js) for this route
-//     // which is lazy-loaded when the route is visited.
-//     component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
-//   },// 添加my路由配置
-//   {
-//     path: '/my',
-//     name: 'My',
-//     component: () => import('@/views/My.vue'),
-//     meta: { requiresAuth: true } // 需要登录的页面
-//   }
-// ]
-//
-// const router = createRouter({
-//   history: createWebHashHistory(),
-//   routes
-// })
-// // 在路由配置后添加全局前置守卫
-// router.beforeEach((to, from, next) => {
-//   const isAuthenticated = localStorage.getItem('userInfo');
-//
-//   // 需要登录的页面且未登录
-//   if (to.matched.some(record => record.meta.requiresAuth)) {
-//     if (!isAuthenticated) {
-//       next({
-//         path: '/login',
-//         query: { redirect: to.fullPath }
-//       });
-//     } else {
-//       next();
-//     }
-//   } else {
-//     next();
-//   }
-// });
-// export default router

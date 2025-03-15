@@ -66,8 +66,30 @@
 .error-tip {
     margin-top: 8px;
     color: #ff4d4f;
-    font-size: 12px;
+    font-size:30px;
     display: flex;
     align-items: center;
     gap: 6px;
+}
+
+.validUsername-text {
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.validUsername-text:not(:empty) {
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.validUsername-text[data-valid="true"] {
+    color: #52c41a;
+    background: #f6ffed;
+    border: 1px solid #b7eb8f;
+}
+
+.validUsername-text[data-valid="false"] {
+    color: #ff4d4f;
+    background: #fff2f0;
+    border: 1px solid #ffccc7;
 }

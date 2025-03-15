@@ -53,7 +53,7 @@
 
 .form-item {
     position: relative;
-    margin-bottom: 25px;
+    margin-bottom: 25px;transform: translateZ(0);
 }
 
 .form-item input {
@@ -142,16 +142,40 @@ input:focus {
 .very-strong {
     background: #00C851;
 }
-
 .captcha-item {
+    margin-bottom: 28px;
+}
+
+.captcha-container {
     display: flex;
-    gap: 10px;
+    gap: 12px;
+    align-items: center;
+}
+
+.captcha-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    transition: border-color 0.3s;
+}
+
+.captcha-input:focus {
+    border-color: #409eff;
+    outline: none;
 }
 
 .captcha-img {
-    height: 45px;
+    width: 120px;
+    height: 40px;
+    border-radius: 6px;
     cursor: pointer;
-    border-radius: 4px;
+    border: 1px solid #eee;
+    transition: transform 0.2s;
+}
+
+.captcha-img:hover {
+    transform: scale(1.03);
 }
 
 .social-icons i {
@@ -198,6 +222,11 @@ input:focus {
     color: #95a5a6;
     margin-top: 8px;
     animation: fadeIn 0.3s ease;
+}
+.captcha-text {
+        color: #e74c3c;
+        display: block;
+        animation: fadeIn 0.3s ease;
 }
 
 /* 动态强度条样式 */

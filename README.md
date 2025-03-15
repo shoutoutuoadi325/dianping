@@ -1,19 +1,11 @@
-# dianping1
+# dianping_frontEnd
 
-## Project setup
-```
-npm install
-```
+[TOC]
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## 思维导图
 
-### Compiles and minifies for production
-```
-npm run build
-```
+![](.\小众点评.png)
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## 评分标准
+
+![](.\评分.png)

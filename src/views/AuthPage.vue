@@ -94,6 +94,7 @@
           <input
               type="text"
               v-model="loginForm.username"
+              @input="validLoginUsername"
               placeholder="用户名"
           >
           <!-- 直接使用 Font Awesome 图标 -->
@@ -179,7 +180,31 @@ export default {
     },
     // 用户名校验方法
     async validUsername() {
+      // 过滤所有空格
+      if (this.registerForm.username)
+        this.registerForm.username = this.registerForm.username.replace(/\s/g, '')
       const username = this.registerForm.username
+      // 优先检查空格
+      if (/\s/.test(username)) {
+        this.userNameMessage = '用户名不能包含空格'
+        this.userNameError = '用户名不能包含空格'
+        return
+      }
+      if (/[^\w-]/.test(username)) {
+        this.userNameMessage = '用户名不能包含非法字符'
+        this.userNameError = '用户名不能包含非法字符'
+        return
+      }
+      if(username.length <6) {
+        this.userNameMessage='用户名过短，应该大于6位'
+        this.userNameError ='用户名过短，应该大于6位'
+        return
+      }
+      if(username.length >20) {
+        this.userNameMessage='用户名过长，应该小于20位'
+        this.userNameError ='用户名过长，应该小于20位'
+        return
+      }
       // 格式校验
       if (!/^[a-zA-Z0-9_]{4,20}$/.test(username)) {
         this.userNameMessage = '用户名需为4-20位字母、数字或下划线'
@@ -207,6 +232,10 @@ export default {
         this.userNameError = '检查失败，请重试'
         console.error('用户名检查错误:', err)
       }
+    }, async validLoginUsername() {
+      // 过滤所有空格
+      if (this.loginForm.username)
+        this.loginForm.username = this.loginForm.username.replace(/\s/g, '')
     },
     togglePassword() {
       this.showPassword = !this.showPassword;
@@ -239,9 +268,9 @@ export default {
         // 处理错误信息
         const errorMsg = err.response?.data?.message || '登录失败';
         if (errorMsg.includes('用户不存在')) {
-          this.$message.error('用户名不存在，😭');
+          this.$message.error('用户名不存在😭');
         } else if (errorMsg.includes('密码错误')) {
-          this.$message.error('密码不正确，😭');
+          this.$message.error('密码不正确😭');
         } else {
           this.$message.error(errorMsg);
         }
@@ -250,9 +279,21 @@ export default {
 
     // 密码强度计算
     checkPasswordStrength() {
+      // 过滤所有空格
+      if (this.registerForm.username)
+        this.registerForm.password = this.registerForm.password.replace(/\s/g, '')
+      if (this.loginForm.password)
+        this.loginForm.password = this.loginForm.password.replace(/\s/g, '')
       const password = this.registerForm.password
       this.passwordError = ''
-
+      // 优先检查空格
+      if (/\s/.test(password)) {
+        this.passwordError = '密码不能包含空格'
+        this.strengthClass = 'none'
+        this.strengthWidth = '0'
+        this.passwordStrength = '密码不能包含空格'
+        return
+      }
       // 基础校验
       if (password.length < 6) {
         this.passwordStrength = '密码长度不能小于6位'

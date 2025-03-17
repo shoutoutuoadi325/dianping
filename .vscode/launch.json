@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-DianpingApplication<dianping>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "org.com.dianping.DianpingApplication",
+            "projectName": "dianping",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

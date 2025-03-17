@@ -184,6 +184,11 @@ export default {
       if (this.registerForm.username)
         this.registerForm.username = this.registerForm.username.replace(/\s/g, '')
       const username = this.registerForm.username
+      if (!username) {
+        this.userNameMessage = '请输入用户名'
+        this.userNameError = '请输入用户名'
+        return
+      }
       // 优先检查空格
       if (/\s/.test(username)) {
         this.userNameMessage = '用户名不能包含空格'
@@ -195,14 +200,14 @@ export default {
         this.userNameError = '用户名不能包含非法字符'
         return
       }
-      if(username.length <6) {
-        this.userNameMessage='用户名过短，应该大于6位'
-        this.userNameError ='用户名过短，应该大于6位'
+      if (username && username.length < 4) {
+        this.userNameMessage = '用户名过短，应该大于4位'
+        this.userNameError = '用户名过短，应该大于4位'
         return
       }
-      if(username.length >20) {
-        this.userNameMessage='用户名过长，应该小于20位'
-        this.userNameError ='用户名过长，应该小于20位'
+      if (username && username.length > 20) {
+        this.userNameMessage = '用户名过长，应该小于20位'
+        this.userNameError = '用户名过长，应该小于20位'
         return
       }
       // 格式校验

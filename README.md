@@ -1,11 +1,12 @@
-# dianping_frontEnd
+# project_dianping
 
-[TOC]
+## 项目介绍
 
-## 思维导图
 
-![](.\小众点评.png)
 
-## 评分标准
-
-![](.\评分.png)
+## 项目人员
+ZHANGZHIQI  develop_backend<br>
+ZWB    management
+chy readme
+shx frontend
+gyw backend

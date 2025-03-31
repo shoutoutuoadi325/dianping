@@ -4,7 +4,7 @@
 }
 
 .background-section {
-    flex: 1;
+    flex: 0 0 65%;
     position: relative;
     overflow: hidden;
 }
@@ -112,6 +112,18 @@ input:focus {
     margin-top: 5px;
 }
 
+.validPassword-text {
+    color: #e74c3c;
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+.validUsername-text {
+    color: #e74c3c;
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
 .toggle-password {
     position: absolute;
     right: 10px;
@@ -199,12 +211,6 @@ input:focus {
     left: 0;
     color: #ff4444;
     font-size: 12px;
-}
-
-.validUsername-text {
-    color: #e74c3c;
-    display: block;
-    animation: fadeIn 0.3s ease;
 }
 
 /* 密码强度指示条容器 */
@@ -298,4 +304,13 @@ input:focus {
     to {
         transform: rotate(360deg);
     }
+}
+
+.info-display {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
 }

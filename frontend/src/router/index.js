@@ -33,9 +33,6 @@ const routes = [
   {
     path: '/user-info',
     component: () => import('@/views/UserInfo.vue')
-  },{
-    path: '/merchants/:id',
-    component: () => import('../views/MerchantDetail.vue')
   }
 ]
 

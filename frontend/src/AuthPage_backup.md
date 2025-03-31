@@ -33,7 +33,7 @@
         </div>
         <div class="form-item" ref="passwordInput">
           <input
-              :type="showPassword_register ? 'text' : 'password'"
+              :type="showPassword ? 'text' : 'password'"
               v-model="registerForm.password"
               placeholder="密码"
               @input="checkPasswordStrength"
@@ -45,18 +45,18 @@
           <span class="icon-lock"><i class="fas fa-lock"></i></span>
           <!-- 添加密码显示切换按钮 -->
           <span class="toggle-password" @click="togglePassword">
-  <i :class="showPassword_register ? 'fa fa-eye' : 'fa fa-eye-slash'"></i>
+<i :class="showPassword ? 'fa fa-eye' : 'fa fa-eye-slash'"></i>
 </span>
-          <!-- 密码强度显示 -->
-          <div class="password-strength-wrapper">
-            <div class="password-strength">
-              <div class="strength-bar" :class="[strengthClass, { 'invalid': strengthClass === 'none' }]"
-                   :style="{ width: strengthWidth }"></div>
-            </div>
-            <span class="strength-text" :class="{ 'invalid-text': strengthClass === 'none' }">{{
-                passwordStrength
-              }}</span>
-          </div>
+<!-- 密码强度显示 -->
+<div class="password-strength-wrapper">
+<div class="password-strength">
+<div class="strength-bar" :class="[strengthClass, { 'invalid': strengthClass === 'none' }]"
+:style="{ width: strengthWidth }"></div>
+</div>
+<span class="strength-text" :class="{ 'invalid-text': strengthClass === 'none' }">{{
+passwordStrength
+}}</span>
+</div>
 
         </div>
         <div class="form-item captcha-item" ref="captchaInput">
@@ -98,14 +98,11 @@
               placeholder="用户名"
           >
           <span class="icon-user"><i class="fas fa-user"></i></span>
-          <div class="username-wrapper">
-            <span class="validUsername-text">{{ loginUserNameError }}</span>
-          </div>
         </div>
 
         <div class="form-item" ref="passwordInput">
           <input
-              :type="showPassword_login ? 'text' : 'password'"
+              :type="showPassword ? 'text' : 'password'"
               v-model="loginForm.password"
               placeholder="密码"
               @input="checkPasswordStrength"
@@ -116,12 +113,9 @@
           <span class="icon-lock"><i class="fas fa-lock"></i></span>
           <!-- 添加密码显示切换按钮 -->
           <span class="toggle-password" @click="togglePassword">
-  <i :class="showPassword_login ? 'fa fa-eye' : 'fa fa-eye-slash'"></i>
+<i :class="showPassword ? 'fa fa-eye' : 'fa fa-eye-slash'"></i>
 </span>
-          <div class="password-wrapper">
-            <span class="validPassword-text">{{ loginPasswordError }}</span>
-          </div>
-        </div>
+</div>
 
         <button type="submit" class="submit-btn">立即登录</button>
         <!-- 第三方登录？ -->
@@ -133,7 +127,7 @@
         <a href="javascript:void(0)" @click="showText('微信号: ...，电话: ...')">用户帮助</a>
         <a href="javascript:void(0)" @click="showText('微信号: ...，电话: ...')">合作伙伴</a>
         <a href="javascript:void(0)" @click="showText('微信号: ...，电话: ...')">隐私政策</a>
-      </div>
+      </div> <!-- 信息显示区域 -->
       <div v-if="currentText" class="info-display">
         {{ currentText }}
       </div>
@@ -158,8 +152,7 @@ export default {
         {regex: /[^A-Za-z0-9]/, score: 3} // 包含特殊字符
       ],
       // 显示密码状态
-      showPassword_login: false,
-      showPassword_register: false,
+      showPassword: false,
       // 修改后的强度等级配置
       strengthLevels: [
         {class: 'none', text: '密码不可用，😭', width: '0'},
@@ -182,8 +175,6 @@ export default {
       userNameMessage: '',
       userNameError: '',
       currentText: '',
-      loginUserNameError: '',
-      loginPasswordError: '',
     }
   },
   methods: {
@@ -196,7 +187,7 @@ export default {
     switchForm(type) {
       this.isLogin = type === 'login'
     },
-    // 注册用户名校验方法
+    // 用户名校验方法
     async validUsername() {
       // 过滤所有空格
       if (this.registerForm.username)
@@ -241,8 +232,7 @@ export default {
         if (res.data.exists) {
           this.userNameMessage = '该用户名已被注册😭'
           this.userNameError = '该用户名已被注册😭'
-        } else {
-          // 格式校验
+        } else {// 格式校验
           if (!/^[a-zA-Z0-9_]{4,20}$/.test(username)) {
             this.userNameMessage = '用户名需为4-20位字母、数字或下划线'
             this.userNameError = '用户名需为4-20位字母、数字或下划线'
@@ -262,80 +252,49 @@ export default {
       // 过滤所有空格
       if (this.loginForm.username)
         this.loginForm.username = this.loginForm.username.replace(/\s/g, '')
-      const username = this.loginForm.username
-      if (!username) {
-        this.loginUserNameError = '请输入用户名'
-        return
-      }
-      // 优先检查空格
-      if (/\s/.test(username)) {
-        this.loginUserNameError = '用户名不能包含空格'
-        return
-      }
-      if (/[^\w-]/.test(username)) {
-        this.loginUserNameError = '用户名不能包含非法字符'
-        return
-      }
-      if (username && username.length < 4) {
-        this.loginUserNameError = '用户名过短，应该大于4位'
-        return
-      }
-      if (username && username.length > 20) {
-        this.loginUserNameError = '用户名过长，应该小于20位'
-        return
-      }
-      // 格式校验
-      if (!/^[a-zA-Z0-9_]{4,20}$/.test(username)) {
-        this.loginUserNameError = '用户名需为4-20位字母、数字或下划线'
-        return
-      }
-      this.loginUserNameError = ''
     }
     ,
     togglePassword() {
-      if (this.isLogin) this.showPassword_login = !this.showPassword_login;
-      else this.showPassword_register = !this.showPassword_register;
-    },
+      this.showPassword = !this.showPassword;
+    }
+    ,
     //登录处理
     async handleLogin() {
+      // 前端基础校验
       if (!this.loginForm.username) {
-        this.loginUserNameError = '请输入用户名';
-        this.triggerShake('username');
-        return;
-      }
-      if (this.loginUserNameError) {
-        this.triggerShake('username');
+        this.$message.error('用户名不能为空');
         return;
       }
       if (!this.loginForm.password) {
-        this.loginPasswordError='密码不能为空';
-        this.triggerShake('password');
+        this.$message.error('密码不能为空');
         return;
       }
+
       try {
         // 调用登录接口
         const res = await this.$http.post('/login', {
           username: this.loginForm.username,
           password: this.loginForm.password
         });
+
         // 保存用户信息到本地存储（根据实际返回字段调整）
         localStorage.setItem('userInfo', JSON.stringify(res.data));
+
         // 跳转到首页
         this.$router.push('/home');
       } catch (err) {
         // 处理错误信息
         const errorMsg = err.response?.data?.message || '登录失败';
         if (errorMsg.includes('用户不存在')) {
-          this.loginUserNameError = '用户名不存在';
-          this.triggerShake('username');
+          this.$message.error('用户名不存在😭');
         } else if (errorMsg.includes('密码错误')) {
-          this.loginPasswordError = '密码不正确😭';
-          this.triggerShake('password');
+          this.$message.error('密码不正确😭');
         } else {
           this.$message.error(errorMsg);
         }
       }
-    },
+    }
+    ,
 
     // 密码强度计算
     checkPasswordStrength() {
@@ -476,7 +435,7 @@ export default {
       this.captchaUrl = 'http://localhost:8080/captcha?' + Date.now();
     }
     ,
-  }
+}
 }
 </script>
 <!-- 在.vue文件的style标签中引入 -->

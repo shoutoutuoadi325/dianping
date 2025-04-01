@@ -12,6 +12,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Random;
 
 @RestController
@@ -26,7 +28,12 @@ public class CaptchaController {
         g.setColor(Color.BLACK);
         g.drawRect(0, 0, width - 1, height - 1);
 
-        Random rand = new Random();
+        Random rand;  // SecureRandom 优先于Random
+        try {
+            rand = SecureRandom.getInstanceStrong();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
         int number = 1000 + rand.nextInt(9000);
         String captchaCode = String.valueOf(number);
         session.setAttribute("CAPTCHA_CODE", captchaCode);

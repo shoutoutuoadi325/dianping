@@ -3,8 +3,8 @@ package org.com.dianping.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.com.dianping.DTO.LoginRequest;
 import org.com.dianping.DTO.NewUserRequest;
-import org.com.dianping.entity.User;
 import org.com.dianping.repository.UserRepository;
+import org.com.dianping.testutils.TestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,8 +49,8 @@ class UserRegistrationAndLoginIntegrationTest {
 
     @Test
     void completeUserRegistrationAndLoginFlow() throws Exception {
-        // 1. 首先获取验证码
-        MockHttpSession session = new MockHttpSession();
+        // 1. 获取验证码（使用工具类创建空 session）
+        MockHttpSession session = TestUtils.createSession(null);
         mockMvc.perform(get("/captcha")
                 .session(session))
                 .andExpect(status().isOk());
@@ -100,9 +100,8 @@ class UserRegistrationAndLoginIntegrationTest {
 
     @Test
     void registrationShouldFail_WithInvalidCaptcha() throws Exception {
-        // 1. 设置错误的验证码
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("CAPTCHA_CODE", "1234");
+        // 直接使用工具类创建验证码为"1234"的 session
+        MockHttpSession session = TestUtils.createSession("1234");
 
         // 2. 使用不匹配的验证码尝试注册
         NewUserRequest registerRequest = new NewUserRequest(testUsername, testPassword, "4321");
@@ -120,8 +119,7 @@ class UserRegistrationAndLoginIntegrationTest {
     @Test
     void loginShouldFail_WithIncorrectPassword() throws Exception {
         // 1. 首先注册用户
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("CAPTCHA_CODE", "1234");
+        MockHttpSession session = TestUtils.createSession("1234");
 
         NewUserRequest registerRequest = new NewUserRequest(testUsername, testPassword, "1234");
         mockMvc.perform(post("/users")

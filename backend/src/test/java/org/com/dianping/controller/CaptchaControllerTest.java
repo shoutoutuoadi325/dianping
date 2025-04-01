@@ -1,5 +1,6 @@
 package org.com.dianping.controller;
 
+import org.com.dianping.testutils.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -20,7 +21,8 @@ class CaptchaControllerTest {
 
     @Test
     void getCaptcha_ShouldGenerateCaptchaImage_AndSetSessionAttribute() throws Exception {
-        MockHttpSession session = new MockHttpSession();
+        // 使用工具类创建 session
+        MockHttpSession session = TestUtils.createSession(null);
 
         MvcResult result = mockMvc.perform(get("/captcha")
                 .session(session))

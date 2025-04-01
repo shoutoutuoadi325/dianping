@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.com.dianping.DTO.NewUserRequest;
 import org.com.dianping.DTO.UserResponse;
 import org.com.dianping.service.UserService;
+import org.com.dianping.testutils.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -11,8 +12,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Collections;
 
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -69,8 +68,8 @@ class UserControllerTest {
         NewUserRequest request = new NewUserRequest(username, password, captcha);
         UserResponse expectedResponse = new UserResponse(1L, username);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("CAPTCHA_CODE", captcha);
+        // 使用工具类创建 session
+        MockHttpSession session = TestUtils.createSession(captcha);
 
         when(userService.registerUser(any(NewUserRequest.class))).thenReturn(expectedResponse);
 
@@ -94,8 +93,8 @@ class UserControllerTest {
         String sessionCaptcha = "5678";
         NewUserRequest request = new NewUserRequest(username, password, requestCaptcha);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("CAPTCHA_CODE", sessionCaptcha);
+        // 使用工具类创建 session
+        MockHttpSession session = TestUtils.createSession(sessionCaptcha);
 
         mockMvc.perform(post("/users")
                 .session(session)
@@ -109,13 +108,13 @@ class UserControllerTest {
 
     @Test
     void registerUser_ShouldReturnBadRequest_WhenUsernameFormatIsInvalid() throws Exception {
-        String username = "abc"; // Too short
+        String username = "abc"; // 用户名过短
         String password = "Password123";
         String captcha = "1234";
         NewUserRequest request = new NewUserRequest(username, password, captcha);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("CAPTCHA_CODE", captcha);
+        // 使用工具类创建 session
+        MockHttpSession session = TestUtils.createSession(captcha);
 
         mockMvc.perform(post("/users")
                 .session(session)
@@ -130,12 +129,12 @@ class UserControllerTest {
     @Test
     void registerUser_ShouldReturnBadRequest_WhenPasswordFormatIsInvalid() throws Exception {
         String username = "validUser";
-        String password = "12345"; // No letters and too short
+        String password = "12345"; // 密码格式不合法
         String captcha = "1234";
         NewUserRequest request = new NewUserRequest(username, password, captcha);
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("CAPTCHA_CODE", captcha);
+        // 使用工具类创建 session
+        MockHttpSession session = TestUtils.createSession(captcha);
 
         mockMvc.perform(post("/users")
                 .session(session)

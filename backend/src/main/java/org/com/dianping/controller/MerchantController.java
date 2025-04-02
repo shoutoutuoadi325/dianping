@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -59,5 +60,16 @@ public class MerchantController {
     @DeleteMapping("/{id}")
     public void deleteMerchant(@PathVariable long id) {
         merchantService.deleteMerchant(id);
+    }
+
+    // 新增：多条件筛选商户
+    @GetMapping("/filter")
+    public List<MerchantResponse> filterMerchants(
+            @RequestParam(required = false) Double minScore,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) List<String> types) {
+        List<Merchant> filtered = merchantService.filterMerchants(minScore, minPrice, maxPrice, types);
+        return filtered.stream().map(MerchantResponse::new).collect(Collectors.toList());
     }
 }

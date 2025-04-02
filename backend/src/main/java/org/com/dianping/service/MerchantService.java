@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class MerchantService {
@@ -51,5 +52,23 @@ public class MerchantService {
     // 删除商户
     public void deleteMerchant(long id) {
         merchantRepository.deleteById(id);
+    }
+
+    // 新增：根据评分、价格区间及商户类型筛选商户，支持多条件组合
+    public List<Merchant> filterMerchants(Double minScore, Double minPrice, Double maxPrice, List<String> types) {
+        return merchantRepository.findAll().stream()
+            .filter(m -> minScore == null || m.getScore() >= minScore)
+            .filter(m -> {
+                if (minPrice != null && maxPrice != null) {
+                    return m.getAverageConsumption() >= minPrice && m.getAverageConsumption() <= maxPrice;
+                } else if (minPrice != null) {
+                    return m.getAverageConsumption() >= minPrice;
+                } else if (maxPrice != null) {
+                    return m.getAverageConsumption() <= maxPrice;
+                }
+                return true;
+            })
+            .filter(m -> types == null || types.isEmpty() || types.contains(m.getType()))
+            .collect(Collectors.toList());
     }
 }

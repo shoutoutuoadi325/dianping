@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <!-- 新增搜索区域 -->
+    <!-- 搜索区域 -->
     <div class="search-section">
       <div class="search-box">
         <input
@@ -11,34 +11,112 @@
         <button @click="handleSearch" class="search-btn">搜索</button>
       </div>
 
-      <!-- 搜索历史 -->
-      <div class="history-panel">
-        <h3>搜索历史</h3>
-        <div>
-          <button v-if="showExpand" @click="toggleExpand" class="expand-btn">
-            {{ isExpanded ? '收起' : '展开' }}
-          </button>
-          <button
-              v-if="searchHistory.length > 0"
-              @click="clearAllHistory"
-              class="clear-all"
-          >
-            清空全部
-          </button>
+      <!-- 筛选和排序区域 -->
+      <div class="filter-sort-section">
+        <div class="filter-options">
+          <div class="filter-group">
+            <label>评分：</label>
+            <select v-model="selectedRating">
+              <option value="">全部</option>
+              <option value="4.0">4.0分以上</option>
+              <option value="4.5">4.5分以上</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>价格区间：</label>
+            <select v-model="selectedPriceRange">
+              <option value="">全部</option>
+              <option value="10-50">￥10-50</option>
+              <option value="50-100">￥50-100</option>
+              <option value="100-200">￥100-200</option>
+              <option value="200">￥200以上</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>人均消费：</label>
+            <select v-model="selectedAvgPrice">
+              <option value="">全部</option>
+              <option value="50">￥50以下</option>
+              <option value="100">￥100以下</option>
+              <option value="150">￥150以下</option>
+            </select>
+          </div>
+
+          <button @click="applyFilters" class="apply-btn">应用筛选</button>
+          <button @click="resetFilters" class="reset-btn">重置</button>
+        </div>
+
+        <div class="sort-options">
+          <label>排序方式：</label>
+          <select v-model="selectedSort" @change="applySort">
+            <option value="default">综合排序</option>
+            <option value="rating">评分最高</option>
+            <option value="price_asc">人均消费最低</option>
+            <option value="price_desc">人均消费最高</option>
+          </select>
         </div>
       </div>
 
-      <ul v-if="searchHistory.length > 0">
+      <!-- 搜索历史 -->
+      <div class="history-panel">
+        <div>
+          <h3>搜索历史
+            <button v-if="showExpand" @click="toggleExpand" class="expand-btn">
+              {{ isExpanded ? '收起' : '展开' }}
+            </button>
+            <button
+                v-if="searchHistory.length > 0"
+                @click="clearAllHistory"
+                class="clear-all"
+            >
+              清空全部
+            </button>
+          </h3>
+        </div>
+      </div>
+
+      <ul v-if="searchHistory.length > 0" class="history-list">
         <li v-for="(item, index) in displayedHistory" :key="item.id">
           <span class="keyword" @click="quickSearch(item.keyword)">{{ item.keyword }}</span>
           <button @click="deleteHistory(item.id)" class="delete-btn">×</button>
         </li>
       </ul>
-      <p v-else class="empty-tip">暂无搜索记录</p>
+      <p v-else class="empty-tip">暂无搜索历史记录</p>
+    </div>
+
+    <!-- 商家列表 -->
+    <div class="business-list">
+      <div v-if="loading" class="loading">加载中...</div>
+      <div v-else-if="businesses.length === 0" class="no-result">
+        没有找到符合条件的商家
+      </div>
+      <div v-else>
+        <div class="business-card" v-for="business in businesses" :key="business.id" @click="goToDetail(business.id)">
+          <div class="business-image">
+            <img :src="business.image" :alt="business.name"/>
+          </div>
+          <div class="business-info">
+            <h3>{{ business.name }}</h3>
+            <div class="rating">
+              <span class="stars">{{ renderStars(business.rating) }}</span>
+              <span class="rating-value">{{ business.rating }}</span>
+            </div>
+            <div class="price">人均: ￥{{ business.avgPrice }}</div>
+            <div class="address">
+              <i class="fas fa-map-marker-alt"></i> {{ business.address }}
+            </div>
+            <div class="hours">
+              <i class="fas fa-clock"></i> {{ business.businessHours }}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- 原有用户信息 -->
+  <!-- 用户信息 -->
   <div class="user-info" @click="goToUserInfo">
     <span class="username">{{ userInfo.username }}</span>
     <div class="avatar">
@@ -50,7 +128,6 @@
     <i class="fas fa-sign-out-alt"></i>
     退出登录
   </button>
-
 </template>
 
 <script>
@@ -63,20 +140,28 @@ export default {
         id: '',
         username: '未登录用户'
       },
-      isExpanded: false,  // 新增展开状态
-      displayLimit: 5,     // 默认显示历史记录数量
+      isExpanded: false,
+      displayLimit: 5,
       searchKeyword: '',
-      searchHistory: []
+      searchHistory: [],
+      loading: false,
+      businesses: [],
+
+      // 筛选条件
+      selectedRating: '',
+      selectedPriceRange: '',
+      selectedAvgPrice: '',
+
+      // 排序条件
+      selectedSort: 'default',
     }
   },
   computed: {
-    // 计算属性
     displayedHistory() {
       return this.isExpanded
           ? this.searchHistory
           : this.searchHistory.slice(0, this.displayLimit)
     },
-    // 控制展开按钮显示
     showExpand() {
       return this.searchHistory.length > this.displayLimit
     }
@@ -86,12 +171,12 @@ export default {
     if (userData) {
       this.userInfo = JSON.parse(userData)
       this.loadSearchHistory()
+      this.fetchBusinesses()
     } else {
       this.$router.push('/login')
     }
   },
   methods: {
-    // 展开/收起切换方法
     toggleExpand() {
       this.isExpanded = !this.isExpanded
     },
@@ -103,6 +188,7 @@ export default {
           }
         })
         this.searchHistory = response.data
+
       } catch (error) {
         console.error('加载搜索历史失败:', error)
       }
@@ -111,15 +197,16 @@ export default {
       if (!this.searchKeyword.trim()) return
 
       try {
-        // 保存搜索记录
         await axios.post('/api/search', null, {
           params: {keyword: this.searchKeyword},
           headers: {
             'UserId': this.userInfo.id
           }
         })
+
         this.searchKeyword = ''
         await this.loadSearchHistory()
+        await this.fetchBusinesses()
       } catch (error) {
         console.error('搜索失败:', error)
       }
@@ -135,7 +222,7 @@ export default {
             'UserId': this.userInfo.id
           }
         })
-        await this.loadSearchHistory()
+        this.searchHistory = this.searchHistory.filter(item => item.id !== id)
       } catch (error) {
         console.error('删除失败:', error)
       }
@@ -158,40 +245,95 @@ export default {
     },
     goToUserInfo() {
       this.$router.push('/user-info')
+    },
+
+    async fetchBusinesses() {
+      this.loading = true;
+      try {
+        const params = {
+          keyword: this.searchKeyword.trim() || null,
+          rating: this.selectedRating || null,
+          priceRange: this.selectedPriceRange || null,
+          avgPrice: this.selectedAvgPrice || null,
+          sort: this.selectedSort
+        };
+        Object.keys(params).forEach(key => {
+          if (params[key] === null || params[key] === undefined || params[key] === undefined) {
+            delete params[key];
+          }
+        });
+        const response = await axios.get('/api/businesses', {params, withCredentials: true});
+        this.businesses = response.data.map(item => ({
+          id: item.id,
+          name: item.merchantName,
+          rating: item.rating,
+          avgPrice: item.avgPrice,
+          address: item.address,
+          businessHours: item.businessHours,
+          image: item.coverUrl ? `http://localhost:8080${item.coverUrl}` :
+              '/placeholder.jpg',
+          phone: item.telephone,
+          description: item.description
+        }));
+      } catch (error) {
+        console.error('获取商家数据失败:', error);
+        this.businesses = [];
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    applyFilters() {
+      this.fetchBusinesses()
+    },
+
+    resetFilters() {
+      this.selectedRating = ''
+      this.selectedPriceRange = ''
+      this.selectedAvgPrice = ''
+      this.selectedSort = 'default'
+      this.fetchBusinesses()
+    },
+
+    applySort() {
+      this.fetchBusinesses()
+    },
+
+    renderStars(rating) {
+      const fullStars = Math.floor(rating)
+      const halfStar = rating % 1 >= 0.5 ? 1 : 0
+      const emptyStars = 5 - fullStars - halfStar
+
+      return '★'.repeat(fullStars) + (halfStar ? '☆' : '') + '☆'.repeat(emptyStars)
+    },
+
+    goToDetail(id) {
+      this.$router.push(`/businessDetail/${id}`)
     }
   }
 }
 </script>
 
 <style scoped>
-.expand-btn {
-  background: #4a90e2;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 15px;
-  margin-right: 10px;
-  transition: all 0.3s;
-}
-
-.expand-btn:hover {
-  background: #357abd;
-}
-
-.history-header div {
-  display: flex;
-  align-items: center;
+.container {
+  padding: 2rem;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
 .search-section {
-  max-width: 800px;
+  max-width: 1000px;
   margin: 20px auto;
   padding: 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .search-box {
   display: flex;
   gap: 10px;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 
 .search-box input {
@@ -205,7 +347,10 @@ export default {
 .search-btn {
   padding: 12px 30px;
   background: #4a90e2;
+  color: white;
+  border: none;
   border-radius: 25px;
+  cursor: pointer;
   transition: all 0.3s;
 }
 
@@ -214,11 +359,86 @@ export default {
   transform: scale(1.05);
 }
 
+.filter-sort-section {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+}
+
+.filter-group label {
+  margin-right: 8px;
+  font-weight: 500;
+}
+
+.filter-group select {
+  padding: 8px 12px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+.apply-btn, .reset-btn {
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.apply-btn {
+  background: #4a90e2;
+  color: white;
+  border: none;
+}
+
+.apply-btn:hover {
+  background: #357abd;
+}
+
+.reset-btn {
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+}
+
+.reset-btn:hover {
+  background: #e9ecef;
+}
+
+.sort-options {
+  display: flex;
+  align-items: center;
+}
+
+.sort-options label {
+  margin-right: 8px;
+  font-weight: 500;
+}
+
+.sort-options select {
+  padding: 8px 12px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
 .history-panel {
   background: white;
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 8px;
+  padding: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 15px;
 }
 
 .history-header {
@@ -230,22 +450,40 @@ export default {
 
 .history-header h3 {
   color: #333;
-  margin: 0;
+  margin: auto;
+}
+
+.expand-btn {
+  background: #4a90e2;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 15px;
+  margin-right: 10px;
+  transition: all 0.3s;
+  border: none;
+  cursor: pointer;
+}
+
+.expand-btn:hover {
+  background: #357abd;
 }
 
 .clear-all {
   background: #e74c3c;
+  color: white;
   padding: 6px 12px;
   border-radius: 15px;
+  border: none;
+  cursor: pointer;
 }
 
-ul {
+.history-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-li {
+.history-list li {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -281,16 +519,89 @@ li {
   margin: 20px 0;
 }
 
-/* 调整原有用户信息位置 */
-.user-info {
-  top: 20px;
-  right: 30px;
+.business-list {
+  max-width: 1000px;
+  margin: 30px auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+  gap: 20px;
 }
 
-.container {
-  padding: 2rem;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+.business-card {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+  cursor: pointer;
+  display: flex;
+}
+
+.business-card:hover {
+  transform: translateY(-5px);
+}
+
+.business-image {
+  width: 150px;
+  height: 150px;
+  overflow: hidden;
+}
+
+.business-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.business-info {
+  padding: 15px;
+  flex: 1;
+}
+
+.business-info h3 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.stars {
+  color: #ffb800;
+  margin-right: 8px;
+}
+
+.rating-value {
+  color: #666;
+}
+
+.price {
+  color: #e53935;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.address, .hours {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.address i, .hours i {
+  margin-right: 5px;
+  color: #4a90e2;
+}
+
+.loading, .no-result {
+  text-align: center;
+  padding: 50px;
+  grid-column: 1 / -1;
+  color: #666;
 }
 
 .user-info {
@@ -337,6 +648,9 @@ li {
   border-radius: 25px;
   cursor: pointer;
   transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .logout-btn:hover {
@@ -345,6 +659,6 @@ li {
 }
 
 .fas {
-  font-size: 2.5rem;
+  font-size: 1rem;
 }
 </style>

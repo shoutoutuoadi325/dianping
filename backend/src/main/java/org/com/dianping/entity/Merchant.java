@@ -1,11 +1,9 @@
 package org.com.dianping.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Entity
 @Table(name = "merchant")
@@ -17,39 +15,39 @@ public class Merchant {
     @Column(name = "merchant_name", nullable = false)
     private String merchantName;
 
-    @Column(name = "type", nullable = false)
-    private String type;
+    @Column(name = "category", nullable = false)
+    private String category;
 
-    @Column(name = "score", nullable = false)
-    private float score;
+    @Column(name = "rating", nullable = false)
+    private Float rating;
 
-    @Column(name = "location", nullable = false)
-    private String location;
+    @Column(name = "address", nullable = false)
+    private String address;
 
-    @Column(name = "average_consumption", nullable = false)
-    private float averageConsumption;
+    @Column(name = "avgPrice", nullable = false)
+    private Float avgPrice;
 
-    @Column(name = "telephone_number", nullable = false)
-    private long telephoneNumber;
+    @Column(name = "telephone", nullable = false)
+    private String telephone;
 
-    @Column(name = "start_time", nullable = false)
-    private String startTime; // 营业时间开始，字符串类型
+    @Column(name = "business_hours", nullable = false)
+    private String businessHours; // 营业时间
 
-    @Column(name = "end_time", nullable = false)
-    private String endTime; // 营业时间结束，字符串类型
+    @Column(name = "description", nullable = false,length = 1000)
+    private String description; // 商家特点
 
-    @Column(name = "tags", length = 500)
-    private String tags;
+    @Column(name = "cover_url", nullable = false)
+    private String coverUrl; // 封面照片
 
-    @Column(name = "photo_url", nullable = false)
-    private String photoUrl;
-
+    @Column(name = "photo_urls", nullable = false)
+    @Convert(converter = StringListConverter.class)
+    private List<String> photoUrls;  // 商家详情页支持多张图片
     // Getters and Setters
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -61,75 +59,88 @@ public class Merchant {
         this.merchantName = merchantName;
     }
 
-    public String getType() {
-        return type;
+    public String getCategory() {
+        return category;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setCategory(String category) {
+        this.category = category;
     }
 
-    public float getScore() {
-        return score;
+    public Float getRating() {
+        return rating;
     }
 
-    public void setScore(float score) {
-        this.score = score;
+    public void setRating(Float rating) {
+        this.rating = rating;
     }
 
-    public String getLocation() {
-        return location;
+    public String getAddress() {
+        return address;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
-    public float getAverageConsumption() {
-        return averageConsumption;
+    public Float getAvgPrice() {
+        return avgPrice;
     }
 
-    public void setAverageConsumption(float averageConsumption) {
-        this.averageConsumption = averageConsumption;
+    public void setAvgPrice(Float avgPrice) {
+        this.avgPrice = avgPrice;
     }
 
-    public long getTelephoneNumber() {
-        return telephoneNumber;
+    public String getTelephone() {
+        return telephone;
     }
 
-    public void setTelephoneNumber(long telephoneNumber) {
-        this.telephoneNumber = telephoneNumber;
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
     }
 
-    public String getStartTime() {
-        return startTime;
+    public String getBusinessHours() {
+        return businessHours;
     }
 
-    public void setStartTime(String startTime) {
-        this.startTime = startTime;
+    public void setBusinessHours(String businessHours) {
+        this.businessHours = businessHours;
     }
 
-    public String getEndTime() {
-        return endTime;
+    public String getDescription() {
+        return description;
     }
 
-    public void setEndTime(String endTime) {
-        this.endTime = endTime;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public String getTags() {
-        return tags;
+    public String getCoverUrl() {
+        return coverUrl;
     }
 
-    public void setTags(String tags) {
-        this.tags = tags;
+    public void setCoverUrl(String coverUrl) {
+        this.coverUrl = coverUrl;
     }
 
-    public String getPhotoUrl() {
-        return photoUrl;
+    public List<String> getPhotoUrls() {
+        return photoUrls;
     }
 
-    public void setPhotoUrl(String photoUrl) {
-        this.photoUrl = photoUrl;
+    public void setPhotoUrls(List<String> photoUrls) {
+        this.photoUrls = photoUrls;
+    }
+}
+
+@Converter
+class StringListConverter implements AttributeConverter<List<String>, String> {
+    @Override
+    public String convertToDatabaseColumn(List<String> list) {
+        return list != null ? String.join(";", list) : "";
+    }
+
+    @Override
+    public List<String> convertToEntityAttribute(String joined) {
+        return joined != null ? Arrays.asList(joined.split(";")) : List.of();
     }
 }

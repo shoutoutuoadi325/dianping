@@ -91,7 +91,8 @@ public class CsvImporter {
         for (char c : chinese.toCharArray()) {
             String[] pinyinArray = PinyinHelper.toHanyuPinyinStringArray(c);
             if (pinyinArray != null) {
-                pinyin.append(pinyinArray[0]);
+                // 去掉音调标记
+                pinyin.append(pinyinArray[0].replaceAll("\\d", ""));
             } else {
                 pinyin.append(c);
             }

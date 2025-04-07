@@ -1,133 +1,137 @@
 <template>
-  <div class="container">
-    <!-- 搜索区域 -->
-    <div class="search-section">
-      <div class="search-box">
-        <input
-            v-model="searchKeyword"
-            @keyup.enter="handleSearch"
-            placeholder="请输入商家名称..."
-        />
-        <button @click="handleSearch" class="search-btn">搜索</button>
-      </div>
-
-      <!-- 筛选和排序区域 -->
-      <div class="filter-sort-section">
-        <div class="filter-options">
-          <div class="filter-group">
-            <label>评分：</label>
-            <select v-model="selectedRating">
-              <option value="">全部</option>
-              <option value="4.0">4.0分以上</option>
-              <option value="4.5">4.5分以上</option>
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <label>价格区间：</label>
-            <select v-model="selectedPriceRange">
-              <option value="">全部</option>
-              <option value="10-50">￥10-50</option>
-              <option value="50-100">￥50-100</option>
-              <option value="100-200">￥100-200</option>
-              <option value="200">￥200以上</option>
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <label>人均消费：</label>
-            <select v-model="selectedAvgPrice">
-              <option value="">全部</option>
-              <option value="50">￥50以下</option>
-              <option value="100">￥100以下</option>
-              <option value="150">￥150以下</option>
-            </select>
-          </div>
-
-          <button @click="applyFilters" class="apply-btn">应用筛选</button>
-          <button @click="resetFilters" class="reset-btn">重置</button>
+  <div class="app-container">
+    <div class="container">
+      <!-- 搜索区域 -->
+      <div class="search-section">
+        <div class="search-box">
+          <input
+              v-model="searchKeyword"
+              @keyup.enter="handleSearch"
+              placeholder="请输入商家名称..."
+          />
+          <button @click="handleSearch" class="search-btn">搜索</button>
         </div>
 
-        <div class="sort-options">
-          <label>排序方式：</label>
-          <select v-model="selectedSort" @change="applySort">
-            <option value="default">综合排序</option>
-            <option value="rating">评分最高</option>
-            <option value="price_asc">人均消费最低</option>
-            <option value="price_desc">人均消费最高</option>
-          </select>
+        <!-- 筛选和排序区域 -->
+        <div class="filter-sort-section">
+          <div class="filter-options">
+            <div class="filter-group">
+              <label>评分：</label>
+              <select v-model="selectedRating">
+                <option value="">全部</option>
+                <option value="4.0">4.0分以上</option>
+                <option value="4.5">4.5分以上</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label>价格区间：</label>
+              <select v-model="selectedPriceRange">
+                <option value="">全部</option>
+                <option value="10-50">￥10-50</option>
+                <option value="50-100">￥50-100</option>
+                <option value="100-200">￥100-200</option>
+                <option value="200">￥200以上</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label>人均消费：</label>
+              <select v-model="selectedAvgPrice">
+                <option value="">全部</option>
+                <option value="50">￥50以下</option>
+                <option value="100">￥100以下</option>
+                <option value="150">￥150以下</option>
+              </select>
+            </div>
+
+            <button @click="applyFilters" class="apply-btn">应用筛选</button>
+            <button @click="resetFilters" class="reset-btn">重置</button>
+          </div>
+
+          <div class="sort-options">
+            <label>排序方式：</label>
+            <select v-model="selectedSort" @change="applySort">
+              <option value="default">综合排序</option>
+              <option value="rating">评分最高</option>
+              <option value="price_asc">人均消费最低</option>
+              <option value="price_desc">人均消费最高</option>
+            </select>
+          </div>
         </div>
+
+        <!-- 搜索历史 -->
+        <div class="history-panel">
+          <div>
+            <h3>搜索历史
+              <button v-if="showExpand" @click="toggleExpand" class="expand-btn">
+                {{ isExpanded ? '收起' : '展开' }}
+              </button>
+              <button
+                  v-if="searchHistory.length > 0"
+                  @click="clearAllHistory"
+                  class="clear-all"
+              >
+                清空全部
+              </button>
+            </h3>
+          </div>
+        </div>
+
+        <ul v-if="searchHistory.length > 0" class="history-list">
+          <li v-for="item in displayedHistory" :key="item.id">
+            <span class="keyword" @click="quickSearch(item.keyword)">{{ item.keyword }}</span>
+            <button @click="deleteHistory(item.id)" class="delete-btn">×</button>
+          </li>
+        </ul>
+        <p v-else class="empty-tip">暂无搜索历史记录</p>
       </div>
 
-      <!-- 搜索历史 -->
-      <div class="history-panel">
-        <div>
-          <h3>搜索历史
-            <button v-if="showExpand" @click="toggleExpand" class="expand-btn">
-              {{ isExpanded ? '收起' : '展开' }}
-            </button>
-            <button
-                v-if="searchHistory.length > 0"
-                @click="clearAllHistory"
-                class="clear-all"
-            >
-              清空全部
-            </button>
-          </h3>
+      <!-- 商家列表 -->
+      <div class="business-list">
+        <div v-if="loading" class="loading">加载中...</div>
+        <div v-else-if="businesses.length === 0" class="no-result">
+          没有找到符合条件的商家
+        </div>
+        <div v-else>
+          <div class="business-card" v-for="business in businesses" :key="business.id" @click="goToDetail(business.id)">
+            <div class="business-image">
+              <img :src="business.image" :alt="business.name"/>
+            </div>
+            <div class="business-info">
+              <h3 v-html="business.highlightedName"></h3>
+              <p class="business-name">{{ business.name }}</p> <!-- 添加商家名称 -->
+              <div class="rating">
+                <span class="stars">{{ renderStars(business.rating) }}</span>
+                <span class="rating-value">{{ business.rating }}</span>
+              </div>
+              <div class="price">人均: ￥{{ business.avgPrice }}</div>
+              <div class="address">
+                <i class="fas fa-map-marker-alt"></i> {{ business.address }}
+              </div>
+              <div class="hours">
+                <i class="fas fa-clock"></i> {{ business.businessHours }}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
-      <ul v-if="searchHistory.length > 0" class="history-list">
-        <li v-for="(item, index) in displayedHistory" :key="item.id">
-          <span class="keyword" @click="quickSearch(item.keyword)">{{ item.keyword }}</span>
-          <button @click="deleteHistory(item.id)" class="delete-btn">×</button>
-        </li>
-      </ul>
-      <p v-else class="empty-tip">暂无搜索历史记录</p>
     </div>
 
-    <!-- 商家列表 -->
-    <div class="business-list">
-      <div v-if="loading" class="loading">加载中...</div>
-      <div v-else-if="businesses.length === 0" class="no-result">
-        没有找到符合条件的商家
+    <!-- 用户信息 -->
+    <div class="user-info" @click="goToUserInfo">
+      <span class="username">{{ userInfo.username }}</span>
+      <div class="avatar">
+        {{ userInfo.username?.charAt(0)?.toUpperCase() }}
       </div>
-      <div v-else>
-        <div class="business-card" v-for="business in businesses" :key="business.id" @click="goToDetail(business.id)">
-          <div class="business-image">
-            <img :src="business.image" :alt="business.name"/>
-          </div>
-          <div class="business-info">
-            <h3>{{ business.name }}</h3>
-            <div class="rating">
-              <span class="stars">{{ renderStars(business.rating) }}</span>
-              <span class="rating-value">{{ business.rating }}</span>
-            </div>
-            <div class="price">人均: ￥{{ business.avgPrice }}</div>
-            <div class="address">
-              <i class="fas fa-map-marker-alt"></i> {{ business.address }}
-            </div>
-            <div class="hours">
-              <i class="fas fa-clock"></i> {{ business.businessHours }}
-            </div>
-          </div>
-        </div>
-      </div>
+    </div>
+    <div>
+      <button class="logout-btn" @click="handleLogout">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>退出登录</span>
+      </button>
     </div>
   </div>
-
-  <!-- 用户信息 -->
-  <div class="user-info" @click="goToUserInfo">
-    <span class="username">{{ userInfo.username }}</span>
-    <div class="avatar">
-      {{ userInfo.username?.charAt(0)?.toUpperCase() }}
-    </div>
-  </div>
-
-  <button class="logout-btn" @click="handleLogout">
-    <i class="fas fa-sign-out-alt"></i>
-    退出登录
-  </button>
 </template>
 
 <script>
@@ -194,22 +198,24 @@ export default {
       }
     },
     async handleSearch() {
-      if (!this.searchKeyword.trim()) return
+      if (!this.searchKeyword.trim()) return;
 
       try {
-        await axios.post('/api/search', null, {
-          params: {keyword: this.searchKeyword},
-          headers: {
-            'UserId': this.userInfo.id
-          }
-        })
-
-        this.searchKeyword = ''
-        await this.loadSearchHistory()
-        await this.fetchBusinesses()
+        const response = await axios.get('/api/businesses', {
+          params: { keyword: this.searchKeyword },
+          headers: { 'UserId': this.userInfo.id }
+        });
+        this.businesses = response.data.map(business => ({
+          ...business,
+          highlightedName: this.highlightKeyword(business.name, this.searchKeyword)
+        }));
       } catch (error) {
-        console.error('搜索失败:', error)
+        console.error('搜索失败:', error);
       }
+    },
+    highlightKeyword(name, keyword) {
+      const regex = new RegExp(`(${keyword})`, 'gi');
+      return name.replace(regex, '<span class="highlight">$1</span>');
     },
     quickSearch(keyword) {
       this.searchKeyword = keyword
@@ -258,7 +264,7 @@ export default {
           sort: this.selectedSort
         };
         Object.keys(params).forEach(key => {
-          if (params[key] === null || params[key] === undefined || params[key] === undefined) {
+          if (params[key] === null || params[key] === undefined) {  // 已移除重复的 undefined 检查
             delete params[key];
           }
         });
@@ -563,6 +569,13 @@ export default {
   color: #333;
 }
 
+.business-name {
+  font-size: 16px; /* 字体稍微大一点 */
+  font-weight: bold; /* 加粗 */
+  color: #333;
+  margin-bottom: 8px;
+}
+
 .rating {
   display: flex;
   align-items: center;
@@ -660,5 +673,9 @@ export default {
 
 .fas {
   font-size: 1rem;
+}
+
+.highlight {
+  background-color: yellow;
 }
 </style>

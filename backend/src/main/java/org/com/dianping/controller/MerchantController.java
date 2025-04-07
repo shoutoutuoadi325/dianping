@@ -36,6 +36,6 @@ public class MerchantController {
 
     @GetMapping("/search")
     public List<Merchant> searchMerchants(@RequestParam String keyword) {
-        return merchantService.searchMerchantsByKeyword(keyword);
+        return merchantService.searchMerchantsWithPinyin(keyword);
     }
 }

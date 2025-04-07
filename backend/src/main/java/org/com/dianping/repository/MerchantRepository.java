@@ -12,7 +12,8 @@ public interface MerchantRepository extends JpaRepository<Merchant, Long>, JpaSp
 
     @Query("SELECT m FROM Merchant m WHERE " +
             "(:keyword IS NULL OR LOWER(m.merchantName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-            "OR LOWER(m.merchantNamePinyin) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+            "OR LOWER(m.merchantNamePinyin) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR LOWER(m.merchantNamePinyin) LIKE LOWER(CONCAT('%', REPLACE(:keyword, ' ', ''), '%'))) " +
             "AND (:minRating IS NULL OR m.rating >= :minRating) " +
             "AND (:minPrice IS NULL OR m.avgPrice >= :minPrice) " +
             "AND (:maxPrice IS NULL OR m.avgPrice <= :maxPrice)")

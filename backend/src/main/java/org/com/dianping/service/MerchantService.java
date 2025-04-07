@@ -70,4 +70,8 @@ public class MerchantService {
     public Optional<Merchant> getMerchantById(Long id) {
         return merchantRepository.findById(id);
     }
+
+    public List<Merchant> searchMerchantsWithPinyin(String keyword) {
+        return merchantRepository.searchMerchantsWithPinyin(keyword, null, null, null);
+    }
 }

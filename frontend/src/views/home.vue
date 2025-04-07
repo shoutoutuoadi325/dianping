@@ -216,9 +216,13 @@ export default {
 },
     async saveSearchKeyword(keyword) {
       try {
-        await axios.post('/api/search', { keyword }, {
-          headers: { 'UserId': this.userInfo.id }
+        await axios.post('/api/search', null, {
+          params: {keyword: this.searchKeyword},
+          headers: {
+            'UserId': this.userInfo.id
+          }
         });
+        this.searchKeyword = ''; // 清空搜索框
         this.loadSearchHistory(); // 重新加载搜索历史
       } catch (error) {
         console.error('保存搜索关键词失败:', error);

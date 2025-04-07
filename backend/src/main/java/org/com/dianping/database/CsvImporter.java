@@ -18,7 +18,7 @@ public class CsvImporter {
     private static final String CSV_FILE_PATH = "C:\\Users\\32300\\Desktop\\project\\backend\\src\\main\\java\\org\\com\\dianping\\database\\merchants.csv";
 
     public static void main(String[] args) {
-        String insertSql = "INSERT INTO merchant (merchant_name, category, rating, address, avgPrice, telephone, business_hours, description, cover_url, photo_urls) " +
+        String insertSql = "INSERT INTO merchant (merchant_name, category, rating, address, avg_price, telephone, business_hours, description, cover_url, photo_urls) " +
                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         // 创建表 SQL
@@ -28,7 +28,7 @@ public class CsvImporter {
                 + "category VARCHAR(255) NOT NULL, "
                 + "rating FLOAT NOT NULL, "
                 + "address VARCHAR(255) NOT NULL, "
-                + "avgPrice FLOAT NOT NULL, "
+                + "avg_price FLOAT NOT NULL, "
                 + "telephone VARCHAR(50) NOT NULL, "
                 + "business_hours VARCHAR(50) NOT NULL, "
                 + "description VARCHAR(1000) NOT NULL, "

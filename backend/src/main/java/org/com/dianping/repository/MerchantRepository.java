@@ -24,6 +24,7 @@ public interface MerchantRepository extends JpaRepository<Merchant, Long>, JpaSp
             @Param("maxPrice") Float maxPrice);
 
     @Query("SELECT m FROM Merchant m WHERE LOWER(m.merchantName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-           "OR LOWER(m.merchantNamePinyin) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+           "OR LOWER(m.merchantNamePinyin) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "OR LOWER(m.merchantNamePinyin) LIKE LOWER(CONCAT('%', REPLACE(:keyword, ' ', '')))")
     List<Merchant> findByKeyword(@Param("keyword") String keyword);
 }

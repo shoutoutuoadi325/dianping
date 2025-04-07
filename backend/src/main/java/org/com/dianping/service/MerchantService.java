@@ -1,6 +1,7 @@
 package org.com.dianping.service;
 
 import jakarta.transaction.Transactional;
+import net.sourceforge.pinyin4j.PinyinHelper;
 import org.com.dianping.entity.Merchant;
 import org.com.dianping.repository.MerchantRepository;
 import org.springframework.data.domain.Sort;
@@ -43,8 +44,24 @@ public class MerchantService {
             maxPrice = avgPrice;
         }
 
+        // 如果 keyword 是汉字，转换为拼音
+        String keywordPinyin = null;
+        if (keyword != null && keyword.matches("[\\u4e00-\\u9fa5]+")) {
+            keywordPinyin = convertToPinyin(keyword);
+        }
+
         List<Merchant> results = merchantRepository.searchMerchantsWithPinyin(
                 keyword, minRating, minPrice, maxPrice);
+
+        // 如果 keywordPinyin 不为空，追加拼音匹配结果
+        if (keywordPinyin != null) {
+            List<Merchant> pinyinResults = merchantRepository.searchMerchantsWithPinyin(
+                    keywordPinyin, minRating, minPrice, maxPrice);
+            results.addAll(pinyinResults);
+        }
+
+        // 去重
+        results = results.stream().distinct().toList();
 
         // 应用排序
         if (sortType != null) {
@@ -61,6 +78,19 @@ public class MerchantService {
             }
         }
         return results;
+    }
+
+    private String convertToPinyin(String chinese) {
+        StringBuilder pinyin = new StringBuilder();
+        for (char c : chinese.toCharArray()) {
+            String[] pinyinArray = PinyinHelper.toHanyuPinyinStringArray(c);
+            if (pinyinArray != null) {
+                pinyin.append(pinyinArray[0]);
+            } else {
+                pinyin.append(c);
+            }
+        }
+        return pinyin.toString();
     }
 
     public List<Merchant> searchMerchantsByKeyword(String keyword) {

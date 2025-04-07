@@ -15,6 +15,9 @@ public class Merchant {
     @Column(name = "merchant_name", nullable = false)
     private String merchantName;
 
+    @Column(name = "merchant_name_pinyin", nullable = false)
+    private String merchantNamePinyin; // 商家名称拼音
+
     @Column(name = "category", nullable = false)
     private String category;
 
@@ -57,6 +60,14 @@ public class Merchant {
 
     public void setMerchantName(String merchantName) {
         this.merchantName = merchantName;
+    }
+
+    public String getMerchantNamePinyin() {
+        return merchantNamePinyin;
+    }
+
+    public void setMerchantNamePinyin(String merchantNamePinyin) {
+        this.merchantNamePinyin = merchantNamePinyin;
     }
 
     public String getCategory() {

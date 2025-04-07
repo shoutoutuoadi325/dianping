@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import net.sourceforge.pinyin4j.PinyinHelper;
 
 public class CsvImporter {
 
@@ -18,8 +19,8 @@ public class CsvImporter {
     private static final String CSV_FILE_PATH = "C:\\Users\\32300\\Desktop\\project\\backend\\src\\main\\java\\org\\com\\dianping\\database\\merchants.csv";
 
     public static void main(String[] args) {
-        String insertSql = "INSERT INTO merchant (merchant_name, category, rating, address, avg_price, telephone, business_hours, description, cover_url, photo_urls) " +
-                           "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String insertSql = "INSERT INTO merchant (merchant_name, category, rating, address, avg_price, telephone, business_hours, description, cover_url, photo_urls, merchant_name_pinyin) " +
+                           "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         // 创建表 SQL
         String createTableSql = "CREATE TABLE IF NOT EXISTS merchant ("
@@ -33,7 +34,8 @@ public class CsvImporter {
                 + "business_hours VARCHAR(50) NOT NULL, "
                 + "description VARCHAR(1000) NOT NULL, "
                 + "cover_url VARCHAR(255) NOT NULL, "
-                + "photo_urls VARCHAR(255) NOT NULL"
+                + "photo_urls VARCHAR(255) NOT NULL, "
+                + "merchant_name_pinyin VARCHAR(255)"
                 + ")";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
@@ -72,6 +74,7 @@ public class CsvImporter {
                     pstmt.setString(8, parts[7]);
                     pstmt.setString(9, parts[8]);
                     pstmt.setString(10, parts[9]);
+                    pstmt.setString(11, getPinyin(parts[0])); // 商家名称拼音
                     pstmt.addBatch();
                 }
                 pstmt.executeBatch();
@@ -81,5 +84,18 @@ public class CsvImporter {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    static String getPinyin(String chinese) {
+        StringBuilder pinyin = new StringBuilder();
+        for (char c : chinese.toCharArray()) {
+            String[] pinyinArray = PinyinHelper.toHanyuPinyinStringArray(c);
+            if (pinyinArray != null) {
+                pinyin.append(pinyinArray[0]);
+            } else {
+                pinyin.append(c);
+            }
+        }
+        return pinyin.toString();
     }
 }

@@ -200,17 +200,34 @@ export default {
     async handleSearch() {
       if (!this.searchKeyword.trim()) return;
 
+      this.loading = true; // 开始加载
       try {
-        const response = await axios.get('/api/businesses', {
-          params: { keyword: this.searchKeyword },
+        // 调用后端关键词搜索 API
+        const response = await axios.get('/api/businesses/search', {
+          params: { keyword: this.searchKeyword.trim() },
           headers: { 'UserId': this.userInfo.id }
         });
+
+        // 更新商家列表
         this.businesses = response.data.map(business => ({
           ...business,
           highlightedName: this.highlightKeyword(business.name, this.searchKeyword)
         }));
       } catch (error) {
         console.error('搜索失败:', error);
+        this.businesses = [];
+      } finally {
+        this.loading = false; // 加载结束
+      }
+    },
+    async saveSearchKeyword(keyword) {
+      try {
+        await axios.post('/api/search', { keyword }, {
+          headers: { 'UserId': this.userInfo.id }
+        });
+        this.loadSearchHistory(); // 重新加载搜索历史
+      } catch (error) {
+        console.error('保存搜索关键词失败:', error);
       }
     },
     highlightKeyword(name, keyword) {

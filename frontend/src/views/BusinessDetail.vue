@@ -1,45 +1,73 @@
 <template>
+<div class="page-container">
   <div class="business-detail">
-    <!-- 封面图显示单张 -->
-    <div class="cover-image">
+    <div class="cover-image-container">
+      <div class="cover-overlay"></div>
       <img :src="coverImage" :alt="business.merchantName">
+      <h1 class="business-title">{{ business.merchantName }}</h1>
     </div>
 
-    <h1>{{ business.merchantName }}</h1>
+    <div class="content-wrapper">
+      <div class="info-section">
+        <div class="rating-box">
+          <span class="stars">{{ renderStars(business.rating) }}</span>
+          <span class="rating-value">{{ business.rating }}分</span>
+        </div>
+        
+        <div class="info-grid">
+          <div class="info-item">
+            <i class="fas fa-yen-sign"></i>
+            <div class="info-text">
+              <label>人均消费</label>
+              <span>￥{{ business.avgPrice }}</span>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <div class="info-text">
+              <label>地址</label>
+              <span>{{ business.address }}</span>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <i class="fas fa-clock"></i>
+            <div class="info-text">
+              <label>营业时间</label>
+              <span>{{ business.businessHours }}</span>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <i class="fas fa-phone"></i>
+            <div class="info-text">
+              <label>联系电话</label>
+              <span>{{ business.telephone }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <div class="info-section">
-      <div class="rating">
-        <span class="stars">{{ renderStars(business.rating) }}</span>
-        {{ business.rating }}分
+      <div class="description-section">
+        <h3><i class="fas fa-store"></i> 商家特色</h3>
+        <p>{{ business.description }}</p>
       </div>
-      <div class="price">人均: ￥{{ business.avgPrice }}</div>
-      <div class="address">
-        <i class="fas fa-map-marker-alt"></i> {{ business.address }}
-      </div>
-      <div class="hours">
-        <i class="fas fa-clock"></i> 营业时间: {{ business.businessHours }}
-      </div>
-      <div class="phone">
-        <i class="fas fa-phone"></i> 电话: {{ business.telephone }}
-      </div>
-    </div>
 
-    <div class="description">
-      <h3>商家特色</h3>
-      <p>{{ business.description }}</p>
-    </div>
-
-    <!-- 详情图遍历photoUrls -->
-    <div class="gallery">
-      <img
-          v-for="(photo, index) in processedPhotos"
-          :key="index"
-          :src="photo"
-          class="gallery-img"
-          alt="商家图片"
-      >
+      <div class="gallery-section">
+        <h3><i class="fas fa-images"></i> 店铺实景</h3>
+        <div class="gallery">
+          <div v-for="(photo, index) in processedPhotos" 
+               :key="index" 
+               class="gallery-item"
+               @click="showFullImage(photo)">
+            <img :src="photo" alt="商家图片">
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+</div>
 </template>
 
 <script>
@@ -96,56 +124,167 @@ export default {
       const fullStars = Math.floor(rating);
       const halfStar = rating % 1 >= 0.5 ? 1 : 0;
       return '★'.repeat(fullStars) + (halfStar ? '☆' : '');
+    },
+    showFullImage(photo) {
+      // Logic to show full image in a modal or new view
+      console.log('Show full image:', photo);
     }
   }
 }
 </script>
 
 <style scoped>
-.business-detail {
-  max-width: 1200px;
-  margin: 20px auto;
-  padding: 20px;
+.page-container {
+  min-height: 100vh;
+  background: #f5f7fa;
 }
 
-.cover-image img {
-  width: 100%;
+.business-detail {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.cover-image-container {
+  position: relative;
   height: 400px;
+  overflow: hidden;
+  border-radius: 0 0 30px 30px;
+}
+
+.cover-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.7));
+}
+
+.cover-image-container img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 10px;
+}
+
+.business-title {
+  position: absolute;
+  bottom: 30px;
+  left: 40px;
+  color: white;
+  font-size: 2.5em;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.content-wrapper {
+  padding: 30px;
+  margin-top: -50px;
+  position: relative;
+}
+
+.info-section {
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.rating-box {
+  text-align: center;
   margin-bottom: 20px;
 }
 
-.info-section > div {
-  margin: 12px 0;
-  font-size: 16px;
-  color: #666;
+.stars {
+  color: #ffd700;
+  font-size: 24px;
+  margin-right: 10px;
 }
 
-.stars {
-  color: #ffb800;
+.rating-value {
   font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.info-item i {
+  font-size: 24px;
+  margin-right: 15px;
+  color: #4a90e2;
+}
+
+.info-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-text label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.info-text span {
+  font-size: 16px;
+  color: #333;
+}
+
+.description-section, .gallery-section {
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  margin-top: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.description-section h3, .gallery-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.description-section p {
+  line-height: 1.6;
+  color: #666;
 }
 
 .gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 15px;
-  margin-top: 30px;
+  margin-top: 20px;
 }
 
-.gallery-img {
+.gallery-item {
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.gallery-item:hover {
+  transform: scale(1.05);
+}
+
+.gallery-item img {
   width: 100%;
-  height: 200px;
+  height: 100%;
   object-fit: cover;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.description {
-  margin: 30px 0;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 8px;
 }
 </style>

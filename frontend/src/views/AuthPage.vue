@@ -33,7 +33,7 @@
         </div>
         <div class="form-item" ref="passwordInput">
           <input
-              :type="showPassword ? 'text' : 'password'"
+              :type="showPassword_register ? 'text' : 'password'"
               v-model="registerForm.password"
               placeholder="密码"
               @input="checkPasswordStrength"
@@ -45,7 +45,7 @@
           <span class="icon-lock"><i class="fas fa-lock"></i></span>
           <!-- 添加密码显示切换按钮 -->
           <span class="toggle-password" @click="togglePassword">
-  <i :class="showPassword ? 'fa fa-eye' : 'fa fa-eye-slash'"></i>
+  <i :class="showPassword_register ? 'fa fa-eye' : 'fa fa-eye-slash'"></i>
 </span>
           <!-- 密码强度显示 -->
           <div class="password-strength-wrapper">
@@ -82,8 +82,8 @@
         <!-- 用户协议 -->
         <div class="agreement">
           点击注册即表示同意
-          <a href="/agreement">《用户协议》</a>和
-          <a href="/privacy">《隐私政策》</a>
+          <a href="javascript:void(0)" @click="showText('微信号: ...，电话: ...')">《用户协议》</a>和
+          <a href="javascript:void(0)" @click="showText('微信号: ...，电话: ...')">《隐私政策》</a>
         </div>
       </form>
 
@@ -94,15 +94,18 @@
           <input
               type="text"
               v-model="loginForm.username"
+              @input="validLoginUsername"
               placeholder="用户名"
           >
-          <!-- 直接使用 Font Awesome 图标 -->
           <span class="icon-user"><i class="fas fa-user"></i></span>
+          <div class="username-wrapper">
+            <span class="validUsername-text">{{ loginUserNameError }}</span>
+          </div>
         </div>
 
         <div class="form-item" ref="passwordInput">
           <input
-              :type="showPassword ? 'text' : 'password'"
+              :type="showPassword_login ? 'text' : 'password'"
               v-model="loginForm.password"
               placeholder="密码"
               @input="checkPasswordStrength"
@@ -110,12 +113,14 @@
               @compositionstart="disableIME"
               @compositionend="disableIME"
           >
-          <!-- 使用 Font Awesome 的锁图标 -->
           <span class="icon-lock"><i class="fas fa-lock"></i></span>
           <!-- 添加密码显示切换按钮 -->
           <span class="toggle-password" @click="togglePassword">
-  <i :class="showPassword ? 'fa fa-eye' : 'fa fa-eye-slash'"></i>
+  <i :class="showPassword_login ? 'fa fa-eye' : 'fa fa-eye-slash'"></i>
 </span>
+          <div class="password-wrapper">
+            <span class="validPassword-text">{{ loginPasswordError }}</span>
+          </div>
         </div>
 
         <button type="submit" class="submit-btn">立即登录</button>
@@ -123,10 +128,14 @@
       </form>
       <!-- 底部链接 -->
       <div class="footer-links">
-        <a href="/about">关于我们</a>
-        <a href="/contact">联系我们</a>
-        <a href="/help">用户帮助</a>
-        <a href="/partner">合作伙伴</a>
+        <a href="https://coder-shx.github.io/Reversible-database-watermarking/">关于我们</a>
+        <a href="https://coder-shx.github.io/Reversible-database-watermarking/">联系我们</a>
+        <a href="javascript:void(0)" @click="showText('微信号: ...，电话: ...')">用户帮助</a>
+        <a href="javascript:void(0)" @click="showText('微信号: ...，电话: ...')">合作伙伴</a>
+        <a href="javascript:void(0)" @click="showText('微信号: ...，电话: ...')">隐私政策</a>
+      </div>
+      <div v-if="currentText" class="info-display">
+        {{ currentText }}
       </div>
     </div>
   </div>
@@ -149,7 +158,8 @@ export default {
         {regex: /[^A-Za-z0-9]/, score: 3} // 包含特殊字符
       ],
       // 显示密码状态
-      showPassword: false,
+      showPassword_login: false,
+      showPassword_register: false,
       // 修改后的强度等级配置
       strengthLevels: [
         {class: 'none', text: '密码不可用，😭', width: '0'},
@@ -170,16 +180,54 @@ export default {
       passwordStrength: '',
       strengthClass: 'none', strengthWidth: '0',
       userNameMessage: '',
-      userNameError: ''
+      userNameError: '',
+      currentText: '',
+      loginUserNameError: '',
+      loginPasswordError: '',
     }
   },
   methods: {
+    showText(text) {
+      this.currentText = text;
+      setTimeout(() => {
+        this.currentText = ''
+      }, 3000)
+    },
     switchForm(type) {
       this.isLogin = type === 'login'
     },
-    // 用户名校验方法
+    // 注册用户名校验方法
     async validUsername() {
+      // 过滤所有空格
+      if (this.registerForm.username)
+        this.registerForm.username = this.registerForm.username.replace(/\s/g, '')
       const username = this.registerForm.username
+      if (!username) {
+        this.userNameMessage = '请输入用户名'
+        this.userNameError = '请输入用户名'
+        return
+      }
+      // 优先检查空格
+      if (/\s/.test(username)) {
+        this.userNameMessage = '用户名不能包含空格'
+        this.userNameError = '用户名不能包含空格'
+        return
+      }
+      if (/[^\w-]/.test(username)) {
+        this.userNameMessage = '用户名不能包含非法字符'
+        this.userNameError = '用户名不能包含非法字符'
+        return
+      }
+      if (username && username.length < 4) {
+        this.userNameMessage = '用户名过短，应该大于4位'
+        this.userNameError = '用户名过短，应该大于4位'
+        return
+      }
+      if (username && username.length > 20) {
+        this.userNameMessage = '用户名过长，应该小于20位'
+        this.userNameError = '用户名过长，应该小于20位'
+        return
+      }
       // 格式校验
       if (!/^[a-zA-Z0-9_]{4,20}$/.test(username)) {
         this.userNameMessage = '用户名需为4-20位字母、数字或下划线'
@@ -193,7 +241,8 @@ export default {
         if (res.data.exists) {
           this.userNameMessage = '该用户名已被注册😭'
           this.userNameError = '该用户名已被注册😭'
-        } else {// 格式校验
+        } else {
+          // 格式校验
           if (!/^[a-zA-Z0-9_]{4,20}$/.test(username)) {
             this.userNameMessage = '用户名需为4-20位字母、数字或下划线'
             this.userNameError = '用户名需为4-20位字母、数字或下划线'
@@ -207,41 +256,81 @@ export default {
         this.userNameError = '检查失败，请重试'
         console.error('用户名检查错误:', err)
       }
-    },
+    }
+    ,
+    async validLoginUsername() {
+      // 过滤所有空格
+      if (this.loginForm.username)
+        this.loginForm.username = this.loginForm.username.replace(/\s/g, '')
+      const username = this.loginForm.username
+      if (!username) {
+        this.loginUserNameError = '请输入用户名'
+        return
+      }
+      // 优先检查空格
+      if (/\s/.test(username)) {
+        this.loginUserNameError = '用户名不能包含空格'
+        return
+      }
+      if (/[^\w-]/.test(username)) {
+        this.loginUserNameError = '用户名不能包含非法字符'
+        return
+      }
+      if (username && username.length < 4) {
+        this.loginUserNameError = '用户名过短，应该大于4位'
+        return
+      }
+      if (username && username.length > 20) {
+        this.loginUserNameError = '用户名过长，应该小于20位'
+        return
+      }
+      // 格式校验
+      if (!/^[a-zA-Z0-9_]{4,20}$/.test(username)) {
+        this.loginUserNameError = '用户名需为4-20位字母、数字或下划线'
+        return
+      }
+      this.loginUserNameError = ''
+    }
+    ,
     togglePassword() {
-      this.showPassword = !this.showPassword;
+      if (this.isLogin) this.showPassword_login = !this.showPassword_login;
+      else this.showPassword_register = !this.showPassword_register;
     },
     //登录处理
     async handleLogin() {
-      // 前端基础校验
       if (!this.loginForm.username) {
-        this.$message.error('用户名不能为空');
+        this.loginUserNameError = '请输入用户名';
+        this.triggerShake('username');
+        return;
+      }
+      if (this.loginUserNameError) {
+        this.triggerShake('username');
         return;
       }
       if (!this.loginForm.password) {
-        this.$message.error('密码不能为空');
+        this.loginPasswordError='密码不能为空';
+        this.triggerShake('password');
         return;
       }
-
       try {
         // 调用登录接口
         const res = await this.$http.post('/login', {
           username: this.loginForm.username,
           password: this.loginForm.password
         });
-
         // 保存用户信息到本地存储（根据实际返回字段调整）
         localStorage.setItem('userInfo', JSON.stringify(res.data));
-
         // 跳转到首页
-        this.$router.push('/my');
+        this.$router.push('/home');
       } catch (err) {
         // 处理错误信息
         const errorMsg = err.response?.data?.message || '登录失败';
         if (errorMsg.includes('用户不存在')) {
-          this.$message.error('用户名不存在，😭');
+          this.loginUserNameError = '用户名不存在';
+          this.triggerShake('username');
         } else if (errorMsg.includes('密码错误')) {
-          this.$message.error('密码不正确，😭');
+          this.loginPasswordError = '密码不正确😭';
+          this.triggerShake('password');
         } else {
           this.$message.error(errorMsg);
         }
@@ -250,9 +339,21 @@ export default {
 
     // 密码强度计算
     checkPasswordStrength() {
+      // 过滤所有空格
+      if (this.registerForm.username)
+        this.registerForm.password = this.registerForm.password.replace(/\s/g, '')
+      if (this.loginForm.password)
+        this.loginForm.password = this.loginForm.password.replace(/\s/g, '')
       const password = this.registerForm.password
       this.passwordError = ''
-
+      // 优先检查空格
+      if (/\s/.test(password)) {
+        this.passwordError = '密码不能包含空格'
+        this.strengthClass = 'none'
+        this.strengthWidth = '0'
+        this.passwordStrength = '密码不能包含空格'
+        return
+      }
       // 基础校验
       if (password.length < 6) {
         this.passwordStrength = '密码长度不能小于6位'
@@ -284,7 +385,8 @@ export default {
       this.strengthClass = this.strengthLevels[levelIndex].class
       this.passwordStrength = this.strengthLevels[levelIndex].text
       this.strengthWidth = this.strengthLevels[levelIndex].width
-    },
+    }
+    ,
     // 注册处理
     async handleRegister() {
       // 用户名校验
@@ -323,7 +425,7 @@ export default {
         // 注册成功后自动登录
         localStorage.setItem('userInfo', JSON.stringify(res.data));
         // 跳转到首页
-        window.location.href = '/my';
+        window.location.href = '/home';
       } catch (err) {
         const errorMsg = err.response?.data?.message || '注册失败';
 
@@ -342,7 +444,8 @@ export default {
           this.$message.error(errorMsg);
         }
       }
-    },
+    }
+    ,
     // 触发震动效果的通用方法
     triggerShake(type) {
       const refMap = {
@@ -362,15 +465,17 @@ export default {
       setTimeout(() => {
         element.style.animation = '';
       }, 500);
-    },
+    }
+    ,
     disableIME(event) {
       event.target.blur(); // 失去焦点，强制用户重新点击输入框
       setTimeout(() => event.target.focus(), 0); // 重新聚焦
-    },
+    }
+    ,
     refreshCaptcha() {
       this.captchaUrl = 'http://localhost:8080/captcha?' + Date.now();
-    },
-
+    }
+    ,
   }
 }
 </script>

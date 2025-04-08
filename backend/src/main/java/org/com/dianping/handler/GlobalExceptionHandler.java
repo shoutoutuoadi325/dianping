@@ -12,5 +12,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
     }
 
-    record ErrorResponse(String message) {}
+    record ErrorResponse(String message) {
+    }
 }

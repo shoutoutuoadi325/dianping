@@ -2,6 +2,8 @@ package org.com.dianping.database;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileInputStream;
+import java.util.Properties;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -11,14 +13,16 @@ import net.sourceforge.pinyin4j.PinyinHelper;
 public class CsvImporter {
 
     // 数据库连接信息
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/dianping?serverTimezone=Asia/Shanghai";
-    private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "Gyw040915#";
+    private static String DB_URL;
+    private static String DB_USER;
+    private static String DB_PASSWORD;
 
     // CSV 文件路径
-    private static final String CSV_FILE_PATH = "C:\\Users\\32300\\Desktop\\project\\backend\\src\\main\\java\\org\\com\\dianping\\database\\merchants.csv";
+    private static final String CSV_FILE_PATH = "backend\\src\\main\\java\\org\\com\\dianping\\database\\merchants.csv";
 
     public static void main(String[] args) {
+        loadDatabaseConfig();
+
         String insertSql = "INSERT INTO merchant (merchant_name, category, rating, address, avg_price, telephone, business_hours, description, cover_url, photo_urls, merchant_name_pinyin) " +
                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -83,6 +87,22 @@ public class CsvImporter {
             System.out.println("数据导入完成！");
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private static void loadDatabaseConfig() {
+        try (FileInputStream fis = new FileInputStream("backend\\src\\main\\java\\org\\com\\dianping\\database\\config.properties")) {
+            Properties props = new Properties();
+            props.load(fis);
+            DB_URL = props.getProperty("DB_URL");
+            DB_USER = props.getProperty("DB_USER");
+            DB_PASSWORD = props.getProperty("DB_PASSWORD");
+
+            if (DB_URL == null || DB_USER == null || DB_PASSWORD == null) {
+                throw new IllegalArgumentException("配置文件中缺少数据库连接信息");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("加载数据库配置失败", e);
         }
     }
 

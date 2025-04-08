@@ -79,9 +79,9 @@ export default {
 .user-card {
   background: white;
   border-radius: 15px;
-  padding: 30px;
+  padding: 40px; /* 增加内边距 */
   width: 100%;
-  max-width: 500px;
+  max-width: 600px; /* 增加卡片宽度 */
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
@@ -91,16 +91,21 @@ export default {
 }
 
 .avatar {
-  width: 100px;
-  height: 100px;
+  width: 120px; /* 增大头像尺寸 */
+  height: 120px;
   background: linear-gradient(45deg, #4a90e2, #357abd);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40px;
+  font-size: 3rem; /* 增大头像文字 */
   color: white;
   margin: 0 auto 15px;
+}
+
+.user-header h2 {
+  font-size: 2rem; /* 增大用户名文字 */
+  margin-top: 20px;
 }
 
 .info-section {
@@ -110,7 +115,8 @@ export default {
 .info-item {
   display: flex;
   align-items: center;
-  padding: 15px;
+  font-size: 1.2rem; /* 增大信息文字 */
+  padding: 20px; /* 增加内边距 */
   background: #f8f9fa;
   border-radius: 8px;
   margin-bottom: 10px;
@@ -119,7 +125,7 @@ export default {
 .info-item i {
   margin-right: 15px;
   color: #4a90e2;
-  font-size: 20px;
+  font-size: 1.4rem; /* 增大图标 */
 }
 
 .action-buttons {
@@ -130,7 +136,7 @@ export default {
 }
 
 .edit-btn, .logout-btn {
-  padding: 12px;
+  padding: 15px; /* 增加按钮内边距 */
   border-radius: 8px;
   border: none;
   cursor: pointer;
@@ -138,7 +144,7 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-size: 16px;
+  font-size: 1.1rem; /* 增大按钮文字 */
   transition: all 0.3s;
 }
 

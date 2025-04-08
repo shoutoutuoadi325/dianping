@@ -171,8 +171,9 @@ export default {
   bottom: 30px;
   left: 40px;
   color: white;
-  font-size: 2.5em;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  font-size: 2.5rem;  /* 增大标题文字 */
+  font-weight: 600;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
 
 .content-wrapper {
@@ -186,11 +187,13 @@ export default {
   border-radius: 15px;
   padding: 25px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  font-size: 1.1rem;  /* 增大信息文字 */
 }
 
 .rating-box {
   text-align: center;
   margin-bottom: 20px;
+  font-size: 1.8rem;  /* 增大评分文字 */
 }
 
 .stars {
@@ -215,13 +218,13 @@ export default {
 .info-item {
   display: flex;
   align-items: center;
-  padding: 15px;
+  padding: 18px;  /* 增加内边距 */
   background: #f8f9fa;
   border-radius: 10px;
 }
 
 .info-item i {
-  font-size: 24px;
+  font-size: 1.4rem;  /* 增大图标 */
   margin-right: 15px;
   color: #4a90e2;
 }
@@ -250,16 +253,18 @@ export default {
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
-.description-section h3, .gallery-section h3 {
+.description-section h3 {
   display: flex;
   align-items: center;
   gap: 10px;
   color: #333;
   margin-bottom: 15px;
+  font-size: 1.6rem;  /* 增大描述标题 */
 }
 
 .description-section p {
-  line-height: 1.6;
+  line-height: 1.8;  /* 增加行高 */
+  font-size: 1.1rem;  /* 增大描述文字 */
   color: #666;
 }
 
@@ -286,5 +291,9 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.gallery-section h3 {
+  font-size: 1.6rem;  /* 增大相册标题 */
 }
 </style>

@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.sql.SQLException;
 import net.sourceforge.pinyin4j.PinyinHelper;
 
 public class CsvImporter {
@@ -68,17 +69,9 @@ public class CsvImporter {
                     for (int i = 0; i < parts.length; i++) {
                         parts[i] = parts[i].replaceAll("^\"|\"$", "");
                     }
-                    pstmt.setString(1, parts[0]);
-                    pstmt.setString(2, parts[1]);
-                    pstmt.setFloat(3, Float.parseFloat(parts[2]));
-                    pstmt.setString(4, parts[3]);
-                    pstmt.setFloat(5, Float.parseFloat(parts[4]));
-                    pstmt.setString(6, parts[5]);
-                    pstmt.setString(7, parts[6]);
-                    pstmt.setString(8, parts[7]);
-                    pstmt.setString(9, parts[8]);
-                    pstmt.setString(10, parts[9]);
-                    pstmt.setString(11, getPinyin(parts[0])); // 商家名称拼音
+                    if (!setPreparedStatementValues(pstmt, parts, line)) {
+                        continue;
+                    }
                     pstmt.addBatch();
                 }
                 pstmt.executeBatch();
@@ -118,5 +111,25 @@ public class CsvImporter {
             }
         }
         return pinyin.toString();
+    }
+
+    private static boolean setPreparedStatementValues(PreparedStatement pstmt, String[] parts, String line) throws SQLException {
+        try {
+            pstmt.setString(1, parts[0]);
+            pstmt.setString(2, parts[1]);
+            pstmt.setFloat(3, Float.parseFloat(parts[2]));
+            pstmt.setString(4, parts[3]);
+            pstmt.setFloat(5, Float.parseFloat(parts[4]));
+            pstmt.setString(6, parts[5]);
+            pstmt.setString(7, parts[6]);
+            pstmt.setString(8, parts[7]);
+            pstmt.setString(9, parts[8]);
+            pstmt.setString(10, parts[9]);
+            pstmt.setString(11, getPinyin(parts[0])); // 商家名称拼音
+            return true;
+        } catch (NumberFormatException e) {
+            System.out.println("跳过格式错误行: " + line);
+            return false;
+        }
     }
 }

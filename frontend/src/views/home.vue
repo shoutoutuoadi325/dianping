@@ -271,31 +271,44 @@ export default {
     async fetchBusinesses() {
       this.loading = true;
       try {
-        const params = {
-          keyword: this.searchKeyword.trim() || null,
-          rating: this.selectedRating || null,
-          priceRange: this.selectedPriceRange || null,
-          avgPrice: this.selectedAvgPrice || null,
-          sort: this.selectedSort
-        };
-        Object.keys(params).forEach(key => {
-          if (params[key] === null || params[key] === undefined) {  // 已移除重复的 undefined 检查
-            delete params[key];
+        const params = {};
+        if (this.searchKeyword.trim()) params.keyword = this.searchKeyword.trim();
+        if (this.selectedRating) params.rating = this.selectedRating;
+        if (this.selectedPriceRange) params.priceRange = this.selectedPriceRange;
+        if (this.selectedAvgPrice) params.avgPrice = this.selectedAvgPrice;
+        // 依然设置了 sort 参数传给后端，但排序功能由前端实现
+        if (this.selectedSort && this.selectedSort !== 'default') {
+          let sortParam = '';
+          if (this.selectedSort === 'rating') {
+            sortParam = 'rating_desc';
+          } else if (this.selectedSort === 'price_asc') {
+            sortParam = 'avgPrice_asc';
+          } else if (this.selectedSort === 'price_desc') {
+            sortParam = 'avgPrice_desc';
           }
-        });
-        const response = await axios.get('/api/businesses', {params, withCredentials: true});
-        this.businesses = response.data.map(item => ({
+          params.sort = sortParam;
+        }
+        const response = await axios.get('/api/businesses', { params, withCredentials: true });
+        let data = response.data.map(item => ({
           id: item.id,
           name: item.merchantName,
           rating: item.rating,
           avgPrice: item.avgPrice,
           address: item.address,
           businessHours: item.businessHours,
-          image: item.coverUrl ? `http://localhost:8080${item.coverUrl}` :
-              '/placeholder.jpg',
+          image: item.coverUrl ? `http://localhost:8080${item.coverUrl}` : '/placeholder.jpg',
           phone: item.telephone,
           description: item.description
         }));
+        // 根据选择的排序方式进行前端排序
+        if (this.selectedSort === 'rating') {
+          data.sort((a, b) => b.rating - a.rating);
+        } else if (this.selectedSort === 'price_asc') {
+          data.sort((a, b) => a.avgPrice - b.avgPrice);
+        } else if (this.selectedSort === 'price_desc') {
+          data.sort((a, b) => b.avgPrice - a.avgPrice);
+        }
+        this.businesses = data;
       } catch (error) {
         console.error('获取商家数据失败:', error);
         this.businesses = [];

@@ -11,6 +11,24 @@
     <!-- 主内容区域 -->
     <h1 class="welcome-title">欢迎来到生活服务平台</h1>
 
+    <div class="feature-cards">
+      <div class="feature-card" @click="$router.push('/my-orders')">
+        <i class="fas fa-receipt"></i>
+        <span>我的订单</span>
+      </div>
+      
+      <div class="feature-card" @click="$router.push('/my-coupons')">
+        <i class="fas fa-ticket-alt"></i>
+        <span>我的卡包</span>
+      </div>
+      
+      <div v-if="!hasOrders" class="feature-card" @click="$router.push('/new-user-coupons')">
+        <i class="fas fa-gift"></i>
+        <span>新人优惠</span>
+        <div class="badge">新</div>
+      </div>
+    </div>
+
     <div class="button-group">
       <button
           class="main-btn food-btn"
@@ -45,19 +63,23 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   data() {
     return {
       userInfo: {
         id: '',
         username: '未登录用户'
-      }
+      },
+      hasOrders: false
     }
   },
-  mounted() {
+  async mounted() {
     const userData = localStorage.getItem('userInfo')
     if (userData) {
       this.userInfo = JSON.parse(userData)
+      await this.checkUserOrders();
     } else {
       this.$router.push('/login')
     }
@@ -69,6 +91,19 @@ export default {
     },
     goToUserInfo() {
       this.$router.push('/user-info')
+    },
+    async checkUserOrders() {
+      try {
+        const response = await axios.get('/api/orders/check-user-orders', {
+          headers: {
+            'UserId': this.userInfo.id
+          }
+        });
+        this.hasOrders = response.data.hasOrders;
+      } catch (error) {
+        console.error('检查用户订单失败:', error);
+        this.hasOrders = false;
+      }
     }
   }
 }
@@ -119,6 +154,60 @@ export default {
   margin: 80px 0 40px;
   color: #2c3e50;
   font-size: 2.2rem;
+}
+
+.feature-cards {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.feature-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.feature-card i {
+  font-size: 2.5rem;
+  color: #4a90e2;
+  margin-bottom: 10px;
+}
+
+.feature-card span {
+  font-size: 1rem;
+  color: #333;
+}
+
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #e53935;
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: bold;
 }
 
 .button-group {

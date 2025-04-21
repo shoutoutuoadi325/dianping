@@ -3,6 +3,16 @@ import AuthPage from '@/views/AuthPage.vue'
 import Home from '@/views/home.vue'
 import BusinessDetail from "@/views/BusinessDetail.vue";
 import UserInfo from "@/views/UserInfo.vue";
+import NearbyFood from '@/views/NearbyFood.vue'
+import LifeZone from '@/views/LifeZone.vue'
+import AddReview from '@/views/AddReview.vue'
+import My from '@/views/My.vue'
+import PackageDetail from '@/views/PackageDetail.vue'
+import OrderConfirmation from '@/views/OrderConfirmation.vue'
+import CouponCode from '@/views/CouponCode.vue'
+import MyOrders from '@/views/MyOrders.vue'
+import MyCoupons from '@/views/MyCoupons.vue'
+import NewUserCoupons from '@/views/NewUserCoupons.vue'
 
 const routes = [
     {
@@ -29,6 +39,66 @@ const routes = [
         path: '/businessDetail/:id',
         name: 'BusinessDetail',
         component: BusinessDetail,
+        meta: {requiresAuth: true}
+    },
+    {
+        path: '/nearby-food',
+        name: 'NearbyFood',
+        component: NearbyFood,
+        meta: {requiresAuth: true}
+    },
+    {
+        path: '/life-zone',
+        name: 'LifeZone',
+        component: LifeZone,
+        meta: {requiresAuth: true}
+    },
+    {
+        path: '/add-review',
+        name: 'AddReview',
+        component: AddReview,
+        meta: {requiresAuth: true}
+    },
+    {
+        path: '/my',
+        name: 'My',
+        component: My,
+        meta: {requiresAuth: true}
+    },
+    {
+        path: '/package/:id',
+        name: 'PackageDetail',
+        component: PackageDetail,
+        meta: {requiresAuth: true}
+    },
+    {
+        path: '/order-confirmation/:packageId',
+        name: 'OrderConfirmation',
+        component: OrderConfirmation,
+        meta: {requiresAuth: true}
+    },
+    {
+        path: '/coupon-code/:orderId',
+        name: 'CouponCode',
+        component: CouponCode,
+        meta: {requiresAuth: true}
+    },
+    {
+        path: '/my-orders',
+        name: 'MyOrders',
+        component: MyOrders,
+        meta: {requiresAuth: true}
+    },
+    {
+        path: '/my-coupons',
+        name: 'MyCoupons',
+        component: MyCoupons,
+        meta: {requiresAuth: true}
+    },
+    {
+        path: '/new-user-coupons',
+        name: 'NewUserCoupons',
+        component: NewUserCoupons,
         meta: {requiresAuth: true}
     }
 ]

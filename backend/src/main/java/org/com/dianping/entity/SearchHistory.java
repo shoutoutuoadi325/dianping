@@ -2,7 +2,6 @@ package org.com.dianping.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "search_history")
 public class SearchHistory {

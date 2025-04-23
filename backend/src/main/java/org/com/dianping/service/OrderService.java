@@ -1,4 +1,5 @@
 package org.com.dianping.service;
+
 import jakarta.transaction.Transactional;
 import org.com.dianping.entity.Coupon;
 import org.com.dianping.entity.Merchant;
@@ -70,7 +71,7 @@ public class OrderService {
 
     private double calculateFinalPrice(double originalPrice, Coupon coupon) {
         //TODO
-//        if (coupon == null) return originalPrice;
+//  if (coupon == null) return originalPrice;
 //
 //        return switch (coupon.getType()) {
 //            case "FIXED" -> Math.max(originalPrice - coupon.getAmount(), 0);

@@ -33,6 +33,7 @@ public class SearchHistory {
         this.keyword = keyword;
         this.createdTime = createdTime;
     }
+
     public Long getId() {
         return id;
     }

@@ -78,4 +78,3 @@
 【Git】分支管理与开发流程
 Lab1 至 Lab2和Lab3 的 Git 提交历史清晰、结构合理。即遵循 GitFlow 的流程，如 feature/hotfix/develop 等分支规范进行开发
 5
-

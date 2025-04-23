@@ -37,9 +37,7 @@ public class Order {
     @Column(nullable = false)
     private String status; // 订单状态：未使用/已使用
 
-    public Order() {
-        super();
-    }
+    public Order() { super(); }
 
     public void setUserId(Long userId) {
         this.userId = userId;

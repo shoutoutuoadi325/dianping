@@ -29,6 +29,7 @@ public class PackageGroup {
 
     @Column(name = "image_url")
     private String imageUrl;
+
     public PackageGroup() {
         super();
     }
@@ -80,5 +81,4 @@ public class PackageGroup {
     public void setDescription(String description) {
         this.description = description;
     }
-
 }

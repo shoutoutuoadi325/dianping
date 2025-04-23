@@ -5,7 +5,6 @@ public class OrderRequest {
     private Long couponId;
 
     public OrderRequest() {
-
     }
     public OrderRequest(Long packageId, Long couponId) {
         this.packageId = packageId;

@@ -83,8 +83,7 @@ public class User {
      * 初始化一个空的用户对象
      * </p>
      */
-    public User() {
-    }
+    public User() {}
 
     /**
      * 获取用户ID

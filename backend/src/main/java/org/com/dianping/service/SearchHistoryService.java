@@ -25,7 +25,6 @@ public class SearchHistoryService {
     @Transactional
     public void deleteHistory(Long userId, Long historyId) {
         repository.deleteByUserIdAndId(userId, historyId);
-//        repository.deleteById(historyId);
     }
     @Transactional
     public void clearAll(Long userId) {

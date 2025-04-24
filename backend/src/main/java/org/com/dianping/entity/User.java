@@ -6,7 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
 /**
  * 用户实体类
  * <p>
@@ -83,8 +82,7 @@ public class User {
      * 初始化一个空的用户对象
      * </p>
      */
-    public User() {
-    }
+    public User() {}
 
     /**
      * 获取用户ID

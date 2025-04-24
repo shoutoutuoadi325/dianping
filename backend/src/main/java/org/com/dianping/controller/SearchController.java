@@ -13,7 +13,6 @@ import java.util.List;
 @RequestMapping("/api/search")
 public class SearchController {
     private final SearchHistoryService service;
-
     public SearchController(SearchHistoryService service) {
         this.service = service;
     }

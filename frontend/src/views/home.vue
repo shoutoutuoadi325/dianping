@@ -76,6 +76,8 @@
               </button>
             </h3>
           </div>
+
+
         </div>
 
         <ul v-if="searchHistory.length > 0" class="history-list">
@@ -129,6 +131,10 @@
       <button class="logout-btn" @click="handleLogout">
         <i class="fas fa-sign-out-alt"></i>
         <span>退出登录</span>
+      </button>
+      <button class="order-btn" @click="showOrders">
+        <i class="fas fa-receipt"></i>
+        <span>我的订单</span>
       </button>
     </div>
   </div>
@@ -263,6 +269,9 @@ export default {
     handleLogout() {
       localStorage.removeItem('userInfo')
       this.$router.push('/login')
+    },
+    showOrders() {
+      this.$router.push('/order-display')
     },
     goToUserInfo() {
       this.$router.push('/user-info')
@@ -692,5 +701,25 @@ export default {
 
 .highlight {
   background-color: yellow;
+}
+
+.order-btn {
+  position: fixed;
+  bottom: 90px; /* 位于退出登录按钮上方 */
+  right: 30px;
+  padding: 12px 25px;
+  background: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.order-btn:hover {
+  background: #357abd;
+  transform: scale(1.05);
 }
 </style>

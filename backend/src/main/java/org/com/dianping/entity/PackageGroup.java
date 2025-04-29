@@ -22,7 +22,7 @@ public class PackageGroup {
     private Double originalPrice;
 
     @Column(nullable = false)
-    private Integer sales=0 ;
+    private Integer sales;
 
     @Column(nullable = false)
     private Long merchantId;//商家id

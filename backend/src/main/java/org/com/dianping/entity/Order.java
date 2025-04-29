@@ -1,7 +1,6 @@
 package org.com.dianping.entity;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,7 +28,6 @@ public class Order {
     @Column(nullable = false)
     private String businessName;
 
-    private List<Coupon> coupons;
 
     @Column(nullable = false)
     private Double originalPrice;
@@ -56,9 +54,6 @@ public class Order {
     }
     public void setBusinessName(String businessName) {
         this.businessName = businessName;
-    }
-    public void setCoupon(List<Coupon> coupons) {
-        this.coupons = coupons;
     }
     public void setOriginalPrice(Double originalPrice) {
         this.originalPrice = originalPrice;

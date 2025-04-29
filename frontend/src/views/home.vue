@@ -20,9 +20,11 @@
                 <button @click="clearAllHistory" class="clear-all">清空</button>
               </div>
               <ul class="history-list">
-                <li v-for="item in displayedHistory" :key="item.id">
-                  <span class="keyword" @click="quickSearch(item.keyword)">{{ item.keyword }}</span>
-                  <button @click="deleteHistory(item.id)" class="delete-btn">×</button>
+                <li v-for="item in displayedHistory" 
+                    :key="item.id" 
+                    @click="quickSearch(item.keyword)">
+                  <span class="keyword">{{ item.keyword }}</span>
+                  <button @click.stop="deleteHistory(item.id)" class="delete-btn">×</button>
                 </li>
               </ul>
             </div>
@@ -110,10 +112,16 @@
     </div>
 
     <!-- 用户信息 -->
-    <div class="user-info" @click="goToUserInfo">
-      <span class="username">{{ userInfo.username }}</span>
-      <div class="avatar">
-        {{ userInfo.username?.charAt(0)?.toUpperCase() }}
+    <div class="user-section">
+      <button class="home-btn" @click="goToHome">
+        <i class="fas fa-home"></i>
+        <span>主页</span>
+      </button>
+      <div class="user-info" @click="goToUserInfo">
+        <span class="username">{{ userInfo.username }}</span>
+        <div class="avatar">
+          {{ userInfo.username?.charAt(0)?.toUpperCase() }}
+        </div>
       </div>
     </div>
     <div>
@@ -225,8 +233,7 @@ export default {
             'UserId': this.userInfo.id
           }
         });
-        this.searchKeyword = ''; // 清空搜索框
-        this.loadSearchHistory(); // 重新加载搜索历史
+        this.loadSearchHistory(); 
       } catch (error) {
         console.error('保存搜索关键词失败:', error);
       }
@@ -236,9 +243,9 @@ export default {
       return name.replace(regex, '<span class="highlight">$1</span>');
     },
     quickSearch(keyword) {
-      this.searchKeyword = keyword
-      this.showHistory = false  // 选择历史记录后隐藏
-      this.handleSearch()
+      this.searchKeyword = keyword  // 保持这一行，让搜索词显示在搜索框中
+      this.showHistory = false  // 选择历史记录后隐藏下拉框
+      this.handleSearch()  // 执行搜索
     },
     async deleteHistory(id) {
       try {
@@ -273,6 +280,16 @@ export default {
     },
     goToUserInfo() {
       this.$router.push('/user-info')
+    },
+    goToHome() {
+      // 重置所有筛选条件
+      this.searchKeyword = '';
+      this.selectedRating = '';
+      this.selectedPriceRange = '';
+      this.selectedAvgPrice = '';
+      this.selectedSort = 'default';
+      // 重新加载商家列表
+      this.fetchBusinesses();
     },
 
     async fetchBusinesses() {
@@ -351,9 +368,9 @@ export default {
 
 <style scoped>
 .container {
-  padding: 2rem;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5faf8 0%, #e2c3d6 100%);
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/src/assets/home.jpg') center/cover fixed;
+  position: relative;
 }
 
 .search-section {
@@ -434,23 +451,29 @@ export default {
   align-items: center;
   padding: 8px 12px;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .history-list li:hover {
   background-color: #f5f5f5;
 }
 
-.clear-all {
-  padding: 4px 8px;
-  background: none;
-  border: none;
-  color: #999;
-  cursor: pointer;
-  font-size: 12px;
+.keyword {
+  flex: 1;
+  margin-right: 8px;
 }
 
-.clear-all:hover {
-  color: #e74c3c;
+.delete-btn {
+  opacity: 0.6;
+  padding: 2px 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.delete-btn:hover {
+  opacity: 1;
 }
 
 .filter-sort-section {
@@ -626,19 +649,29 @@ export default {
   color: #666;
 }
 
-.user-info {
+.user-section {
   position: fixed;
   top: 20px;
   right: 30px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  transition: all 0.3s;
 }
 
-.user-info:hover {
-  transform: scale(1.05);
+.home-btn {
+  position: fixed;
+  top: 20px;
+  left: 30px; /* 改为左边固定位置 */
+  padding: 12px 25px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  z-index: 1000; /* 确保按钮始终可见 */
 }
 
 .avatar {

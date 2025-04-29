@@ -4,8 +4,9 @@ import org.com.dianping.entity.User;
 
 public record UserResponse(
         Long id,
-        String username) {
+        String username,
+        Integer orderCount) {
     public UserResponse(User user) {
-        this(user.getId(), user.getUsername());
+        this(user.getId(), user.getUsername(), user.getOrderCount());
     }
 }

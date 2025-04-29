@@ -1,8 +1,13 @@
 package org.com.dianping.entity;
 
-import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "orders")
@@ -23,7 +28,6 @@ public class Order {
     @Column(nullable = false)
     private String businessName;
 
-    private Long couponId;
 
     @Column(nullable = false)
     private Double originalPrice;
@@ -50,9 +54,6 @@ public class Order {
     }
     public void setBusinessName(String businessName) {
         this.businessName = businessName;
-    }
-    public void setCouponId(Long couponId) {
-        this.couponId = couponId;
     }
     public void setOriginalPrice(Double originalPrice) {
         this.originalPrice = originalPrice;

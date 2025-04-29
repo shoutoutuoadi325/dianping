@@ -33,6 +33,7 @@ public class OrderService {
         this.merchantRepository = merchantRepository;
     }
 
+    @Transactional
     public Order createOrder(Long userId, Long packageId) {
         // 获取套餐信息
         PackageGroup pkg = packageGroupRepository.findById(packageId)

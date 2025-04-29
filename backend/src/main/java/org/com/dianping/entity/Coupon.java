@@ -1,7 +1,11 @@
 package org.com.dianping.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.*;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "coupon")
@@ -19,7 +23,6 @@ public class Coupon {
     @Column(name = "coupon_amount", nullable = false, unique = false)
     private Integer couponAmount;
 
-    
 
     public Long getId() {
         return id;

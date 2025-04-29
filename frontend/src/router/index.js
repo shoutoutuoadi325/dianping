@@ -13,6 +13,7 @@ import CouponCode from '@/views/CouponCode.vue'
 import MyOrders from '@/views/MyOrders.vue'
 import MyCoupons from '@/views/MyCoupons.vue'
 import NewUserCoupons from '@/views/NewUserCoupons.vue'
+import OrderDisplay from '@/views/OrderDisplay.vue';
 
 const routes = [
     {
@@ -99,6 +100,12 @@ const routes = [
         path: '/new-user-coupons',
         name: 'NewUserCoupons',
         component: NewUserCoupons,
+        meta: {requiresAuth: true}
+    },
+    {
+        path: '/order-display',
+        name: 'OrderDisplay',
+        component: OrderDisplay,
         meta: {requiresAuth: true}
     }
 ]

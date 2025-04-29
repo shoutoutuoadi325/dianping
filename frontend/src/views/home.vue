@@ -95,7 +95,7 @@
         <div v-else-if="businesses.length === 0" class="no-result">
           没有找到符合条件的商家
         </div>
-        <div v-else>
+        <template v-else>
           <div class="business-card" v-for="business in businesses" :key="business.id" @click="goToDetail(business.id)">
             <div class="business-image">
               <img :src="business.image" :alt="business.name"/>
@@ -116,7 +116,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </template>
       </div>
     </div>
 
@@ -348,7 +348,7 @@ export default {
 .container {
   padding: 2rem;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #f5faf8 0%, #e2c3d6 100%);
 }
 
 .search-section {
@@ -553,8 +553,15 @@ export default {
   max-width: 1000px;
   margin: 30px auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+  grid-auto-flow: row;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .business-list {
+    grid-template-columns: 1fr; /* 小屏幕时单列 */
+  }
 }
 
 .business-card {
@@ -564,7 +571,7 @@ export default {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s;
   cursor: pointer;
-  display: flex;
+  display:flex;
 }
 
 .business-card:hover {

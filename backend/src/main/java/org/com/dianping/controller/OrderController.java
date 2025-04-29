@@ -1,27 +1,38 @@
 package org.com.dianping.controller;
 
-import org.com.dianping.DTO.OrderRequest;
-import org.com.dianping.entity.Coupon;
-import org.com.dianping.entity.Order;
-import org.com.dianping.service.CouponService;
-import org.com.dianping.service.OrderService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 import java.util.Map;
 
+import org.com.dianping.DTO.OrderRequest;
+import org.com.dianping.entity.Order;
+import org.com.dianping.service.OrderService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * 订单API控制器
+ * <p>
+ * 处理订单创建相关请求
+ * </p>
+ */
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
     private final OrderService orderService;
-    private final CouponService couponService;
 
-    public OrderController(OrderService orderService, CouponService couponService) {
+    public OrderController(OrderService orderService) {
         this.orderService = orderService;
-        this.couponService = couponService;
     }
 
+    /**
+     * 创建新订单
+     * @param userId 用户ID(请求头)
+     * @param request 订单请求体
+     * @return 创建成功的订单或错误信息
+     */
     @PostMapping
     public ResponseEntity<?> createOrder(
             @RequestHeader("UserId") Long userId,
@@ -30,18 +41,15 @@ public class OrderController {
         try {
             Order order = orderService.createOrder(
                     userId,
-                    request.getPackageId(),
-                //TODO coupon implement
-                    request.getCouponId()
+                    request.getPackageId()
             );
             return ResponseEntity.ok(order);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest()
+                    .body(Map.of(
+                            "error", "订单创建失败",
+                            "message", e.getMessage()
+                    ));
         }
-    }
-
-    @GetMapping("/coupons")
-    public List<Coupon> getValidCoupons(@RequestHeader("UserId") Long userId) {
-        return couponService.getValidCouponsForUser(userId);
     }
 }

@@ -1,6 +1,6 @@
 import {createRouter, createWebHistory} from 'vue-router'
 import AuthPage from '@/views/AuthPage.vue'
-import Home from '@/views/home.vue'
+import Home from '@/views/NearbyFood.vue'
 import BusinessDetail from "@/views/BusinessDetail.vue";
 import UserInfo from "@/views/UserInfo.vue";
 import NearbyFood from '@/views/NearbyFood.vue'
@@ -13,23 +13,22 @@ import CouponCode from '@/views/CouponCode.vue'
 import MyOrders from '@/views/MyOrders.vue'
 import MyCoupons from '@/views/MyCoupons.vue'
 import NewUserCoupons from '@/views/NewUserCoupons.vue'
-import OrderDisplay from '@/views/OrderDisplay.vue';
 
 const routes = [
     {
         path: '/',
-        redirect: '/login' // 默认跳转到登录页
+        redirect: '/auth' // 默认跳转到 AuthPage
     },
     {
-        path: '/login',
+        path: '/auth',
         name: 'AuthPage',
         component: AuthPage
     },
     {
-        path: '/home',
-        name: 'Home',
-        component: Home,
-        meta: {requiresAuth: true} // 需要登录才能访问
+        path: '/my',
+        name: 'My',
+        component: () => import('@/views/My.vue'),
+        meta: { requiresAuth: true } // 需要登录
     },
     {
         path: '/user-info',
@@ -58,12 +57,6 @@ const routes = [
         path: '/add-review',
         name: 'AddReview',
         component: AddReview,
-        meta: {requiresAuth: true}
-    },
-    {
-        path: '/my',
-        name: 'My',
-        component: My,
         meta: {requiresAuth: true}
     },
     {
@@ -101,12 +94,6 @@ const routes = [
         name: 'NewUserCoupons',
         component: NewUserCoupons,
         meta: {requiresAuth: true}
-    },
-    {
-        path: '/order-display',
-        name: 'OrderDisplay',
-        component: OrderDisplay,
-        meta: {requiresAuth: true}
     }
 ]
 
@@ -115,14 +102,14 @@ const router = createRouter({
     routes
 })
 
-// 路由守卫：拦截未登录访问
+// 路由守卫，检查登录状态
 router.beforeEach((to, from, next) => {
-    const isAuthenticated = localStorage.getItem('userInfo')
-    if (to.meta.requiresAuth && !isAuthenticated) {
-        next('/login') // 未登录则跳转登录页
+    const isAuthenticated = !!localStorage.getItem('userInfo'); // 判断用户是否已登录
+    if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
+        next('/auth'); // 未登录时跳转到 AuthPage
     } else {
-        next()
+        next(); // 其他情况正常跳转
     }
-})
+});
 
 export default router

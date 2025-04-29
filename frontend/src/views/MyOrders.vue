@@ -19,7 +19,7 @@
         </div>
         <h2>暂无订单</h2>
         <p>您还没有购买任何套餐</p>
-        <button class="explore-btn" @click="$router.push('/home')">去逛逛</button>
+        <button class="explore-btn" @click="$router.push('/nearby-food')">去逛逛</button>
       </div>
       
       <div v-else class="orders-list">

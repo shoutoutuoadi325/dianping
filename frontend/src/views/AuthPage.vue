@@ -321,7 +321,7 @@ export default {
         // 保存用户信息到本地存储（根据实际返回字段调整）
         localStorage.setItem('userInfo', JSON.stringify(res.data));
         // 跳转到首页
-        this.$router.push('/home');
+        this.$router.push('/my');
       } catch (err) {
         // 处理错误信息
         const errorMsg = err.response?.data?.message || '登录失败';
@@ -425,7 +425,7 @@ export default {
         // 注册成功后自动登录
         localStorage.setItem('userInfo', JSON.stringify(res.data));
         // 跳转到首页
-        window.location.href = '/home';
+        this.$router.push('/my');
       } catch (err) {
         const errorMsg = err.response?.data?.message || '注册失败';
 

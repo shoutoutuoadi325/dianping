@@ -4,12 +4,29 @@
       <!-- 搜索区域 -->
       <div class="search-section">
         <div class="search-box">
-          <input
-              v-model="searchKeyword"
-              @keyup.enter="handleSearch"
-              placeholder="请输入商家名称..."
-          />
-          <button @click="handleSearch" class="search-btn">搜索</button>
+          <div class="search-input-container">
+            <input
+                v-model="searchKeyword"
+                @keyup.enter="handleSearch"
+                @focus="showHistory = true"
+                placeholder="请输入商家名称..."
+            />
+            <button @click="handleSearch" class="search-btn">搜索</button>
+            
+            <!-- 修改搜索历史的显示条件 -->
+            <div v-if="searchHistory.length > 0 && showHistory" class="history-dropdown">
+              <div class="history-header">
+                <span>搜索历史</span>
+                <button @click="clearAllHistory" class="clear-all">清空</button>
+              </div>
+              <ul class="history-list">
+                <li v-for="item in displayedHistory" :key="item.id">
+                  <span class="keyword" @click="quickSearch(item.keyword)">{{ item.keyword }}</span>
+                  <button @click="deleteHistory(item.id)" class="delete-btn">×</button>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
 
         <!-- 筛选和排序区域 -->
@@ -59,34 +76,6 @@
             </select>
           </div>
         </div>
-
-        <!-- 搜索历史 -->
-        <div class="history-panel">
-          <div>
-            <h3>搜索历史
-              <button v-if="showExpand" @click="toggleExpand" class="expand-btn">
-                {{ isExpanded ? '收起' : '展开' }}
-              </button>
-              <button
-                  v-if="searchHistory.length > 0"
-                  @click="clearAllHistory"
-                  class="clear-all"
-              >
-                清空全部
-              </button>
-            </h3>
-          </div>
-
-
-        </div>
-
-        <ul v-if="searchHistory.length > 0" class="history-list">
-          <li v-for="item in displayedHistory" :key="item.id">
-            <span class="keyword" @click="quickSearch(item.keyword)">{{ item.keyword }}</span>
-            <button @click="deleteHistory(item.id)" class="delete-btn">×</button>
-          </li>
-        </ul>
-        <p v-else class="empty-tip">暂无搜索历史记录</p>
       </div>
 
       <!-- 商家列表 -->
@@ -151,7 +140,7 @@ export default {
         username: '未登录用户'
       },
       isExpanded: false,
-      displayLimit: 5,
+      displayLimit: 15, // 修改为15条
       searchKeyword: '',
       searchHistory: [],
       loading: false,
@@ -164,6 +153,8 @@ export default {
 
       // 排序条件
       selectedSort: 'default',
+
+      showHistory: false, // 添加控制搜索历史显示的变量
     }
   },
   computed: {
@@ -185,6 +176,12 @@ export default {
     } else {
       this.$router.push('/login')
     }
+    // 添加点击事件监听器
+    document.addEventListener('click', this.handleClickOutside)
+  },
+  beforeDestroy() {
+    // 组件销毁前移除事件监听器
+    document.removeEventListener('click', this.handleClickOutside)
   },
   methods: {
     toggleExpand() {
@@ -240,6 +237,7 @@ export default {
     },
     quickSearch(keyword) {
       this.searchKeyword = keyword
+      this.showHistory = false  // 选择历史记录后隐藏
       this.handleSearch()
     },
     async deleteHistory(id) {
@@ -339,6 +337,13 @@ export default {
 
     goToDetail(id) {
       this.$router.push(`/businessDetail/${id}`)
+    },
+
+    handleClickOutside(event) {
+      const container = document.querySelector('.search-input-container')
+      if (container && !container.contains(event.target)) {
+        this.showHistory = false
+      }
     }
   }
 }
@@ -366,6 +371,12 @@ export default {
   margin-bottom: 20px;
 }
 
+.search-input-container {
+  position: relative;
+  flex: 1;
+  width: 100%;  /* 确保容器宽度正确 */
+}
+
 .search-box input {
   flex: 1;
   padding: 12px;
@@ -387,6 +398,59 @@ export default {
 .search-btn:hover {
   background: #357abd;
   transform: scale(1.05);
+}
+
+.history-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.history-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.history-list li:hover {
+  background-color: #f5f5f5;
+}
+
+.clear-all {
+  padding: 4px 8px;
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.clear-all:hover {
+  color: #e74c3c;
 }
 
 .filter-sort-section {
@@ -463,98 +527,12 @@ export default {
   border: 1px solid #ddd;
 }
 
-.history-panel {
-  background: white;
-  border-radius: 8px;
-  padding: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 15px;
-}
-
-.history-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.history-header h3 {
-  color: #333;
-  margin: auto;
-}
-
-.expand-btn {
-  background: #4a90e2;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 15px;
-  margin-right: 10px;
-  transition: all 0.3s;
-  border: none;
-  cursor: pointer;
-}
-
-.expand-btn:hover {
-  background: #357abd;
-}
-
-.clear-all {
-  background: #e74c3c;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 15px;
-  border: none;
-  cursor: pointer;
-}
-
-.history-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.history-list li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.keyword {
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.keyword:hover {
-  color: #4a90e2;
-}
-
-.delete-btn {
-  background: none;
-  border: none;
-  color: #999;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 0 8px;
-}
-
-.delete-btn:hover {
-  color: #e74c3c;
-}
-
-.empty-tip {
-  color: #999;
-  text-align: center;
-  margin: 20px 0;
-}
-
 .business-list {
   max-width: 1000px;
   margin: 30px auto;
   display: grid;
   grid-auto-flow: row;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
   gap: 20px;
 }
 

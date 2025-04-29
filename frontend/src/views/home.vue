@@ -4,12 +4,31 @@
       <!-- 搜索区域 -->
       <div class="search-section">
         <div class="search-box">
-          <input
-              v-model="searchKeyword"
-              @keyup.enter="handleSearch"
-              placeholder="请输入商家名称..."
-          />
-          <button @click="handleSearch" class="search-btn">搜索</button>
+          <div class="search-input-container">
+            <input
+                v-model="searchKeyword"
+                @keyup.enter="handleSearch"
+                @focus="showHistory = true"
+                placeholder="请输入商家名称..."
+            />
+            <button @click="handleSearch" class="search-btn">搜索</button>
+            
+            <!-- 修改搜索历史的显示条件 -->
+            <div v-if="searchHistory.length > 0 && showHistory" class="history-dropdown">
+              <div class="history-header">
+                <span>搜索历史</span>
+                <button @click="clearAllHistory" class="clear-all">清空</button>
+              </div>
+              <ul class="history-list">
+                <li v-for="item in displayedHistory" 
+                    :key="item.id" 
+                    @click="quickSearch(item.keyword)">
+                  <span class="keyword">{{ item.keyword }}</span>
+                  <button @click.stop="deleteHistory(item.id)" class="delete-btn">×</button>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
 
         <!-- 筛选和排序区域 -->
@@ -59,32 +78,6 @@
             </select>
           </div>
         </div>
-
-        <!-- 搜索历史 -->
-        <div class="history-panel">
-          <div>
-            <h3>搜索历史
-              <button v-if="showExpand" @click="toggleExpand" class="expand-btn">
-                {{ isExpanded ? '收起' : '展开' }}
-              </button>
-              <button
-                  v-if="searchHistory.length > 0"
-                  @click="clearAllHistory"
-                  class="clear-all"
-              >
-                清空全部
-              </button>
-            </h3>
-          </div>
-        </div>
-
-        <ul v-if="searchHistory.length > 0" class="history-list">
-          <li v-for="item in displayedHistory" :key="item.id">
-            <span class="keyword" @click="quickSearch(item.keyword)">{{ item.keyword }}</span>
-            <button @click="deleteHistory(item.id)" class="delete-btn">×</button>
-          </li>
-        </ul>
-        <p v-else class="empty-tip">暂无搜索历史记录</p>
       </div>
 
       <!-- 商家列表 -->
@@ -93,7 +86,7 @@
         <div v-else-if="businesses.length === 0" class="no-result">
           没有找到符合条件的商家
         </div>
-        <div v-else>
+        <template v-else>
           <div class="business-card" v-for="business in businesses" :key="business.id" @click="goToDetail(business.id)">
             <div class="business-image">
               <img :src="business.image" :alt="business.name"/>
@@ -114,21 +107,31 @@
               </div>
             </div>
           </div>
-        </div>
+        </template>
       </div>
     </div>
 
     <!-- 用户信息 -->
-    <div class="user-info" @click="goToUserInfo">
-      <span class="username">{{ userInfo.username }}</span>
-      <div class="avatar">
-        {{ userInfo.username?.charAt(0)?.toUpperCase() }}
+    <div class="user-section">
+      <button class="home-btn" @click="goToHome">
+        <i class="fas fa-home"></i>
+        <span>主页</span>
+      </button>
+      <div class="user-info" @click="goToUserInfo">
+        <span class="username">{{ userInfo.username }}</span>
+        <div class="avatar">
+          {{ userInfo.username?.charAt(0)?.toUpperCase() }}
+        </div>
       </div>
     </div>
     <div>
       <button class="logout-btn" @click="handleLogout">
         <i class="fas fa-sign-out-alt"></i>
         <span>退出登录</span>
+      </button>
+      <button class="order-btn" @click="showOrders">
+        <i class="fas fa-receipt"></i>
+        <span>我的订单</span>
       </button>
     </div>
   </div>
@@ -145,7 +148,7 @@ export default {
         username: '未登录用户'
       },
       isExpanded: false,
-      displayLimit: 5,
+      displayLimit: 15, // 修改为15条
       searchKeyword: '',
       searchHistory: [],
       loading: false,
@@ -158,6 +161,8 @@ export default {
 
       // 排序条件
       selectedSort: 'default',
+
+      showHistory: false, // 添加控制搜索历史显示的变量
     }
   },
   computed: {
@@ -179,6 +184,12 @@ export default {
     } else {
       this.$router.push('/login')
     }
+    // 添加点击事件监听器
+    document.addEventListener('click', this.handleClickOutside)
+  },
+  beforeDestroy() {
+    // 组件销毁前移除事件监听器
+    document.removeEventListener('click', this.handleClickOutside)
   },
   methods: {
     toggleExpand() {
@@ -222,8 +233,7 @@ export default {
             'UserId': this.userInfo.id
           }
         });
-        this.searchKeyword = ''; // 清空搜索框
-        this.loadSearchHistory(); // 重新加载搜索历史
+        this.loadSearchHistory(); 
       } catch (error) {
         console.error('保存搜索关键词失败:', error);
       }
@@ -233,8 +243,9 @@ export default {
       return name.replace(regex, '<span class="highlight">$1</span>');
     },
     quickSearch(keyword) {
-      this.searchKeyword = keyword
-      this.handleSearch()
+      this.searchKeyword = keyword  // 保持这一行，让搜索词显示在搜索框中
+      this.showHistory = false  // 选择历史记录后隐藏下拉框
+      this.handleSearch()  // 执行搜索
     },
     async deleteHistory(id) {
       try {
@@ -264,8 +275,21 @@ export default {
       localStorage.removeItem('userInfo')
       this.$router.push('/login')
     },
+    showOrders() {
+      this.$router.push('/order-display')
+    },
     goToUserInfo() {
       this.$router.push('/user-info')
+    },
+    goToHome() {
+      // 重置所有筛选条件
+      this.searchKeyword = '';
+      this.selectedRating = '';
+      this.selectedPriceRange = '';
+      this.selectedAvgPrice = '';
+      this.selectedSort = 'default';
+      // 重新加载商家列表
+      this.fetchBusinesses();
     },
 
     async fetchBusinesses() {
@@ -330,6 +354,13 @@ export default {
 
     goToDetail(id) {
       this.$router.push(`/businessDetail/${id}`)
+    },
+
+    handleClickOutside(event) {
+      const container = document.querySelector('.search-input-container')
+      if (container && !container.contains(event.target)) {
+        this.showHistory = false
+      }
     }
   }
 }
@@ -337,9 +368,13 @@ export default {
 
 <style scoped>
 .container {
-  padding: 2rem;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/src/assets/home.jpg');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed; /* 添加固定背景效果，滚动时更流畅 */
+  position: relative;
 }
 
 .search-section {
@@ -355,6 +390,12 @@ export default {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
+}
+
+.search-input-container {
+  position: relative;
+  flex: 1;
+  width: 100%;  /* 确保容器宽度正确 */
 }
 
 .search-box input {
@@ -378,6 +419,65 @@ export default {
 .search-btn:hover {
   background: #357abd;
   transform: scale(1.05);
+}
+
+.history-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.history-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.history-list li:hover {
+  background-color: #f5f5f5;
+}
+
+.keyword {
+  flex: 1;
+  margin-right: 8px;
+}
+
+.delete-btn {
+  opacity: 0.6;
+  padding: 2px 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.delete-btn:hover {
+  opacity: 1;
 }
 
 .filter-sort-section {
@@ -454,98 +554,19 @@ export default {
   border: 1px solid #ddd;
 }
 
-.history-panel {
-  background: white;
-  border-radius: 8px;
-  padding: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 15px;
-}
-
-.history-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.history-header h3 {
-  color: #333;
-  margin: auto;
-}
-
-.expand-btn {
-  background: #4a90e2;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 15px;
-  margin-right: 10px;
-  transition: all 0.3s;
-  border: none;
-  cursor: pointer;
-}
-
-.expand-btn:hover {
-  background: #357abd;
-}
-
-.clear-all {
-  background: #e74c3c;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 15px;
-  border: none;
-  cursor: pointer;
-}
-
-.history-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.history-list li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.keyword {
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.keyword:hover {
-  color: #4a90e2;
-}
-
-.delete-btn {
-  background: none;
-  border: none;
-  color: #999;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 0 8px;
-}
-
-.delete-btn:hover {
-  color: #e74c3c;
-}
-
-.empty-tip {
-  color: #999;
-  text-align: center;
-  margin: 20px 0;
-}
-
 .business-list {
   max-width: 1000px;
   margin: 30px auto;
   display: grid;
+  grid-auto-flow: row;
   grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
   gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .business-list {
+    grid-template-columns: 1fr; /* 小屏幕时单列 */
+  }
 }
 
 .business-card {
@@ -555,7 +576,7 @@ export default {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s;
   cursor: pointer;
-  display: flex;
+  display:flex;
 }
 
 .business-card:hover {
@@ -632,19 +653,29 @@ export default {
   color: #666;
 }
 
-.user-info {
+.user-section {
   position: fixed;
   top: 20px;
   right: 30px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  transition: all 0.3s;
 }
 
-.user-info:hover {
-  transform: scale(1.05);
+.home-btn {
+  position: fixed;
+  top: 20px;
+  left: 30px; /* 改为左边固定位置 */
+  padding: 12px 25px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  z-index: 1000; /* 确保按钮始终可见 */
 }
 
 .avatar {
@@ -692,5 +723,25 @@ export default {
 
 .highlight {
   background-color: yellow;
+}
+
+.order-btn {
+  position: fixed;
+  bottom: 90px; /* 位于退出登录按钮上方 */
+  right: 30px;
+  padding: 12px 25px;
+  background: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.order-btn:hover {
+  background: #357abd;
+  transform: scale(1.05);
 }
 </style>

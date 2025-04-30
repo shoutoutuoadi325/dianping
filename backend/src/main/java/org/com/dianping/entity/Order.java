@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -32,7 +33,7 @@ public class Order {
     @Column(nullable = false)
     private Double originalPrice;
 
-    @Column(nullable = false)
+    @OneToOne
     private Coupon bestCoupon;
 
     @Column(nullable = false)

@@ -5,6 +5,7 @@ import java.util.List;
 import org.com.dianping.entity.Coupon;
 import org.com.dianping.service.CouponService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -35,5 +36,10 @@ public class CouponController {
     public void issueCouponByName(@RequestHeader("UserId") Long userId, @RequestBody Coupon coupon) {
         coupon.setUserId(userId);
         couponService.saveCoupon(coupon);
+    }
+    
+    @PostMapping("/use/{couponId}")
+    public void useCoupon(@PathVariable Long couponId) {
+        couponService.useCoupon(couponId);
     }
 }

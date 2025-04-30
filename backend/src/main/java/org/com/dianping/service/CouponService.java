@@ -1,5 +1,6 @@
 package org.com.dianping.service;
 import java.util.List;
+import java.util.Optional;
 
 import org.com.dianping.entity.Coupon;
 import org.com.dianping.entity.User;
@@ -56,5 +57,18 @@ public class CouponService {
     
     public void saveCoupon(Coupon coupon) {
         couponRepository.save(coupon);
+    }
+
+    public void useCoupon(Long couponId) {
+        Optional<Coupon> optionalCoupon = couponRepository.findById(couponId);
+        if (optionalCoupon.isPresent()) {
+            Coupon coupon = optionalCoupon.get();
+            if (coupon.getCouponAmount() > 1) {
+                coupon.setCouponAmount(coupon.getCouponAmount() - 1);
+                couponRepository.save(coupon);
+            } else {
+                couponRepository.delete(coupon);
+            }
+        }
     }
 }

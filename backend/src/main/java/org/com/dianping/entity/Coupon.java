@@ -20,7 +20,7 @@ public class Coupon {
     @Column(name = "user_id", nullable = false, unique = false)
     private Long userId;
 
-    @Column(name = "coupon_amount", nullable = false, unique = false)
+    @Column(name = "coupon_amount", nullable = false, columnDefinition = "INTEGER")
     private Integer couponAmount;
 
     @Column(name = "category", nullable = true)

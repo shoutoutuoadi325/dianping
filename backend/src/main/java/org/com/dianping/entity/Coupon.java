@@ -23,6 +23,11 @@ public class Coupon {
     @Column(name = "coupon_amount", nullable = false, unique = false)
     private Integer couponAmount;
 
+    @Column(name = "category", nullable = true)
+    private String category;  // 商品类别改为String类型
+
+    @Column(name = "shop_id", nullable = true)
+    private Long shopId;  // 适用商铺ID
 
     public Long getId() {
         return id;
@@ -54,5 +59,21 @@ public class Coupon {
 
     public void setCouponAmount(Integer couponAmount) {
         this.couponAmount = couponAmount;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public Long getShopId() {
+        return shopId;
+    }
+
+    public void setShopId(Long shopId) {
+        this.shopId = shopId;
     }
 }

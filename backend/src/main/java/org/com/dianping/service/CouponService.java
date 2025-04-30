@@ -21,38 +21,40 @@ public class CouponService {
         return couponRepository.findValidCouponsByUserId(userId);
     }
 
-    public void issueNewUserCoupons(Long userId) {
+    public void issueNewUserCoupons(Long userId, char choice) {
         User user = userRepository.findById(userId).orElseThrow(() -> 
             new RuntimeException("用户不存在"));
         
         if (user.getOrderCount() == 0) {
             // 创建四种优惠券
-            Coupon coupon1 = new Coupon();
-            coupon1.setCouponName("无门槛优惠券");
-            coupon1.setUserId(userId);
-            coupon1.setCouponAmount(1);
-            
-            Coupon coupon2 = new Coupon();
-            coupon2.setCouponName("满30减8元");
-            coupon2.setUserId(userId);
-            coupon2.setCouponAmount(1);
-            
-            Coupon coupon3 = new Coupon();
-            coupon3.setCouponName("满50减10元");
-            coupon3.setUserId(userId);
-            coupon3.setCouponAmount(1);
-            
-            Coupon coupon4 = new Coupon();
-            coupon4.setCouponName("满100减20");
-            coupon4.setUserId(userId);
-            coupon4.setCouponAmount(1);
+            Coupon coupon_init = new Coupon();
+
+            if(choice == 'A'){
+                coupon_init.setCouponName("无门槛优惠券");
+                coupon_init.setUserId(userId);
+                coupon_init.setCouponAmount(1);
+            }else if(choice == 'B'){
+                coupon_init.setCouponName("满30减8元");
+                coupon_init.setUserId(userId);
+                coupon_init.setCouponAmount(1);
+            }else if(choice == 'C'){
+                coupon_init.setCouponName("0元免单券(10元以内)");
+                coupon_init.setUserId(userId);
+                coupon_init.setCouponAmount(1);
+            }else if(choice == 'D'){
+                coupon_init.setCouponName("满100打8折券");
+                coupon_init.setUserId(userId);
+                coupon_init.setCouponAmount(1);
+            }
+
             
             // 保存优惠券
-            couponRepository.save(coupon1);
-            couponRepository.save(coupon2);
-            couponRepository.save(coupon3);
-            couponRepository.save(coupon4);
+            couponRepository.save(coupon_init);
         }
 
+    }
+    
+    public void saveCoupon(Coupon coupon) {
+        couponRepository.save(coupon);
     }
 }

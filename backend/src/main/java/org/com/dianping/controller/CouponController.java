@@ -5,8 +5,11 @@ import java.util.List;
 import org.com.dianping.entity.Coupon;
 import org.com.dianping.service.CouponService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -23,5 +26,14 @@ public class CouponController {
         return couponService.getValidCouponsForUser(userId);
     }
     
-    // 可以添加更多优惠券相关接口
+    @PostMapping("/issue-by-choice")
+    public void issueCouponByChoice(@RequestHeader("UserId") Long userId, @RequestParam char choice) {
+        couponService.issueNewUserCoupons(userId, choice);
+    }
+    
+    @PostMapping("/issue-by-name")
+    public void issueCouponByName(@RequestHeader("UserId") Long userId, @RequestBody Coupon coupon) {
+        coupon.setUserId(userId);
+        couponService.saveCoupon(coupon);
+    }
 }

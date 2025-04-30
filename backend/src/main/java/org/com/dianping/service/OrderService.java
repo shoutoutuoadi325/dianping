@@ -45,7 +45,9 @@ public class OrderService {
         List<Coupon> validCoupons = couponRepository.findValidCouponsByUserId(userId);
         
         // 计算最终价格（使用最优优惠券）
-        double finalPrice = calculateBestPrice(pkg.getPrice(), validCoupons);
+        UsedCoupon couponUsing = calculateBestPrice(pkg.getPrice(), validCoupons);
+        Double finalPrice = pkg.getPrice() - couponUsing.Discount;
+        Coupon bestCoupon = couponUsing.coupon;
     
         // 生成唯一券码
         String voucherCode = generateVoucherCode();
@@ -57,6 +59,7 @@ public class OrderService {
         order.setCreateTime(LocalDateTime.now());
         order.setBusinessName(merchant.getMerchantName());
         order.setOriginalPrice(pkg.getPrice());
+        order.setBestCoupon(bestCoupon);
         order.setFinalPrice(finalPrice);
         order.setVoucherCode(voucherCode);
         order.setStatus("未使用");
@@ -68,73 +71,87 @@ public class OrderService {
         return order;
     }
 
-    public Double calculateBestPrice(Double originalPrice, List<Coupon> coupon) {
-        if (coupon == null) {
-            return originalPrice;
-        }
-        if (originalPrice >= 100) {
-            for (Coupon c : coupon) {
-                if (c.getCouponName() == "满100减20") {
-                    return originalPrice - 20;
-                }
-            }
-            for (Coupon c : coupon) {
-                if (c.getCouponName() == "满50减10") {
-                    return originalPrice - 10;
-                }
-            }
-            for (Coupon c : coupon) {
-                if (c.getCouponName() == "满30减8") {
-                    return originalPrice - 8;
-                }
-            }
-            for (Coupon c : coupon) {
-                if (c.getCouponName() == "无门槛优惠券") {
-                    return originalPrice - 5;
-                }
-            }
-            return originalPrice;
-        }else if (originalPrice >= 50) {
-            for (Coupon c : coupon) {
-                if (c.getCouponName() == "满50减10") {
-                    return originalPrice - 10;
-                }
-            }
-            for (Coupon c : coupon) {
-                if (c.getCouponName() == "满30减8") {
-                    return originalPrice - 8;
-                }
-            }
-            for (Coupon c : coupon) {
-                if (c.getCouponName() == "无门槛优惠券") {
-                    return originalPrice - 5;
-                }
-            }
-            return originalPrice;
-        }else if (originalPrice >= 30) {
-            for (Coupon c : coupon) {
-                if (c.getCouponName() == "满30减8") {
-                    return originalPrice - 8;
-                }
-            }
-            for (Coupon c : coupon) {
-                if (c.getCouponName() == "无门槛优惠券") {
-                    return originalPrice - 5;
-                }
-            } 
-            return originalPrice;
+    public UsedCoupon calculateBestPrice(Double originalPrice, List<Coupon> coupon) {
+        if (coupon.isEmpty()) {
+            return new UsedCoupon();
         }else{
-            for (Coupon c : coupon) {
-                if (c.getCouponName() == "无门槛优惠券") {
-                    return originalPrice - 5;
+            if(originalPrice >= 100){
+                for (Coupon c : coupon) {
+                    if (c.getCouponName().equals("满100打8折券")) {
+                        return new UsedCoupon(c, originalPrice * 0.2);
+                    }
                 }
-            } 
-            return originalPrice;
+                for (Coupon c : coupon) {
+                    if (c.getCouponName().equals("满30减8元")) {
+                        return new UsedCoupon(c, 8.0);
+                    }
+                }
+                for (Coupon c : coupon) {
+                    if (c.getCouponName().equals("无门槛优惠券")) {
+                        return new UsedCoupon(c, 5.0);
+                    }
+                }
+            }else if(originalPrice >= 30){
+                for (Coupon c : coupon) {
+                    if (c.getCouponName().equals("满30减8元")) {
+                        return new UsedCoupon(c, 8.0);
+                    }
+                }
+                for (Coupon c : coupon) {
+                    if (c.getCouponName().equals("无门槛优惠券")) {
+                        return new UsedCoupon(c, 5.0);
+                    }
+                }
+            }else if(originalPrice >= 10){
+                for (Coupon c : coupon) {
+                    if (c.getCouponName().equals("无门槛优惠券")) {
+                        return new UsedCoupon(c, 5.0);
+                    }
+                }
+            }else if(originalPrice >= 5){
+                for (Coupon c : coupon) {
+                    if (c.getCouponName().equals("无门槛优惠券")) {
+                        return new UsedCoupon(c, 5.0);
+                    }
+                }
+                for (Coupon c : coupon) {
+                    if (c.getCouponName().equals("0元免单券(10元以内)")) {
+                        return new UsedCoupon(c, originalPrice);
+                    }
+                }
+            }else{
+                for (Coupon c : coupon) {
+                    if (c.getCouponName().equals("无门槛优惠券")) {
+                        return new UsedCoupon(c, originalPrice);
+                    }
+                }
+                for (Coupon c : coupon) {
+                    if (c.getCouponName().equals("0元免单券(10元以内)")) {
+                        return new UsedCoupon(c, originalPrice);
+                    }
+                }
+            }
+            return new UsedCoupon();
         }
     }
 
     private String generateVoucherCode() {
         String uuid = UUID.randomUUID().toString().replace("-", "");
         return uuid.substring(0, 16).toUpperCase();
+    }
+}
+
+class UsedCoupon {
+    public Coupon coupon;
+    public Double Discount;
+
+    public UsedCoupon() {
+        this.coupon = null;
+        this.Discount = 0.0;
+    }
+
+    public UsedCoupon(Coupon coupon, Double Discount) {
+        this.coupon = coupon;
+        this.Discount = Discount;
     }
 }

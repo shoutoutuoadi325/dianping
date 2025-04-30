@@ -33,6 +33,9 @@ public class Order {
     private Double originalPrice;
 
     @Column(nullable = false)
+    private Coupon bestCoupon;
+
+    @Column(nullable = false)
     private Double finalPrice;
 
     @Column(nullable = false, unique = true)
@@ -57,6 +60,9 @@ public class Order {
     }
     public void setOriginalPrice(Double originalPrice) {
         this.originalPrice = originalPrice;
+    }
+    public void setBestCoupon(Coupon bestCoupon) {
+        this.bestCoupon = bestCoupon;
     }
     public void setFinalPrice(Double finalPrice) {
         this.finalPrice = finalPrice;

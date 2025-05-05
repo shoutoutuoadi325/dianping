@@ -37,7 +37,7 @@ public class OrderService {
     }
 
     @Transactional
-    public Order createOrder(Long userId, long packageId) {
+    public Order createOrder(Long userId, Long packageId) {
         // 获取套餐信息
         PackageGroup pkg = packageGroupRepository.findById(packageId)
                 .orElseThrow(() -> new RuntimeException("套餐不存在"));

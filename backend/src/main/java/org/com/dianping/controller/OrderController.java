@@ -25,7 +25,7 @@ public class OrderController {
             @RequestBody OrderRequest request
     ) {
         try {
-            Order order = orderService.createOrder(userId, request);
+            Order order = orderService.createOrder(userId, request.getPackageId());
             return ResponseEntity.ok(order);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest()

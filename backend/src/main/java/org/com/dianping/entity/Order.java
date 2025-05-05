@@ -77,4 +77,19 @@ public class Order {
     public Long getId() {
         return id;
     }
+
+    public long getUserId() {
+        return userId;
+    }
+
+    public Long getPackageId() {
+        return packageId;
+    }
+
+    public String getBusinessName() {
+        return businessName;
+    }
+   public String getVoucherCode() {
+        return voucherCode;
+   }
 }

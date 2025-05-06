@@ -282,7 +282,7 @@ export default {
       this.$router.push('/login')
     },
     showOrders() {
-      this.$router.push('/order-display')
+      this.$router.push('/my-orders')
     },
     goToUserInfo() {
       this.$router.push('/user-info')

@@ -52,10 +52,10 @@ export default {
     return {
       loading: true,
       availableCoupons: [
-        { choice: 'A', name: '无门槛优惠券', description: '无门槛使用' },
-        { choice: 'B', name: '满30减8元', description: '满30元可用' },
-        { choice: 'C', name: '0元免单券', description: '10元以内免单' },
-        { choice: 'D', name: '满100打8折券', description: '满100元打8折' }
+        { choice: 'A', name: '火锅满减', description: '满100减38元(火锅专用券)' },
+        { choice: 'B', name: '奶茶折扣', description: '满25元5折券(奶茶专用券)' },
+        { choice: 'C', name: '咖啡免单', description: '咖啡畅喝免单券' },
+        { choice: 'D', name: '通用立减', description: '通用立减10元券' }
       ],
       userInfo: null
     };

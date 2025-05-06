@@ -20,6 +20,10 @@ import org.com.dianping.repository.OrderRepository;
 import org.com.dianping.repository.PackageGroupRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+
+import com.hp.hpl.sparta.xpath.ThisNodeTest;
+
 import jakarta.transaction.Transactional;   
 @Service
 @Transactional
@@ -100,26 +104,19 @@ public class OrderService {
         return orderRepository.existsByUserId(userId);
     }
 
+    // 移除静态初始化
+    private List<CouponRule> couponRules;
+
     public UsedCoupon calculateBestPrice(Double originalPrice, List<Coupon> coupons) {
         if (coupons.isEmpty()) {
             return new UsedCoupon();
         }
-    
-        // 定义优惠券优先级规则
-        List<CouponRule> rules = Arrays.asList(
-// 导入缺失的 Predicate 和 Function 类
-            new CouponRule((Predicate<Coupon>) c -> originalPrice >= 100 && c.getCouponName().equals("满100打8折券(最多可减30元)"),
-                          c -> Math.max(originalPrice * 0.2, 30.0)),
-            new CouponRule(c -> originalPrice >= 30 && c.getCouponName().equals("满30减8元"), 
-                          c -> 8.0),
-            new CouponRule(c -> originalPrice >= 10 && c.getCouponName().equals("无门槛优惠券"), 
-                          c -> 5.0),
-            new CouponRule(c -> originalPrice < 10 && c.getCouponName().equals("0元免单券(10元以内)"), 
-                          c -> originalPrice)
-        );
-    
-        // 按优先级顺序查找最优优惠券
-        for (CouponRule rule : rules) {
+        
+        // 动态创建规则列表
+        this.couponRules = createCouponRules(originalPrice);
+        
+        // 使用预定义的规则列表
+        for (CouponRule rule : couponRules) {
             Optional<Coupon> matchedCoupon = coupons.stream()
                 .filter(rule.condition)
                 .findFirst();
@@ -128,8 +125,29 @@ public class OrderService {
                 return new UsedCoupon(matchedCoupon.get(), rule.discount.apply(matchedCoupon.get()));
             }
         }
-    
+        
         return new UsedCoupon();
+    }
+    
+    private List<CouponRule> createCouponRules(Double originalPrice) {
+        List<CouponRule> rules = new ArrayList<>();
+        rules.add(new CouponRule(
+            c -> originalPrice >= 100 && c.getCouponName().equals("满100打8折券(最多可减30元)"),
+            c -> Math.max(originalPrice * 0.2, 30.0)
+        ));
+        rules.add(new CouponRule(
+            c -> originalPrice >= 30 && c.getCouponName().equals("满30减8元"),
+            c -> 8.0
+        ));
+        rules.add(new CouponRule(
+            c -> originalPrice >= 10 && c.getCouponName().equals("无门槛优惠券"),
+            c -> 5.0
+        ));
+        rules.add(new CouponRule(
+            c -> originalPrice < 10 && c.getCouponName().equals("0元免单券(10元以内)"),
+            c -> originalPrice
+        ));
+        return rules;
     }
     
     // 新增内部类定义优惠券规则

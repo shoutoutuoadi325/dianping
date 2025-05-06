@@ -92,4 +92,7 @@ public class Order {
    public String getVoucherCode() {
         return voucherCode;
    }
+   public Double getFinalPrice() {
+        return finalPrice;
+   }
 }

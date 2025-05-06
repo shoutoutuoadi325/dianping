@@ -38,8 +38,8 @@
             <div class="order-business">{{ order.businessName }}</div>
             <div class="order-title">{{ order.packageTitle }}</div>
             <div class="order-price">￥{{ order.finalPrice }}</div>
-          </div>
-          
+           </div>
+                     
           <div class="order-footer">
             <button class="view-code-btn">查看券码</button>
           </div>
@@ -72,6 +72,7 @@ export default {
             'UserId': this.userInfo.id
           }
         });
+        console.log('订单数据:', response.data); // 添加这行来调试
         this.orders = response.data;
       } catch (error) {
         console.error('获取订单列表失败:', error);

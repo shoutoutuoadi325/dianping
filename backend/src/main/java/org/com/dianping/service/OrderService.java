@@ -1,9 +1,7 @@
 package org.com.dianping.service;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -19,10 +17,6 @@ import org.com.dianping.repository.MerchantRepository;
 import org.com.dianping.repository.OrderRepository;
 import org.com.dianping.repository.PackageGroupRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-
-import com.hp.hpl.sparta.xpath.ThisNodeTest;
 
 import jakarta.transaction.Transactional;   
 @Service
@@ -51,7 +45,7 @@ public class OrderService {
                 .orElseThrow(() -> new RuntimeException("套餐不存在"));
 
         // 获取用户所有可用优惠券
-        List<Coupon> validCoupons = couponRepository.findValidCouponsByUserIdAndMerchant(userId, MerchantCategory, merchantId);
+        List<Coupon> validCoupons = couponRepository.findValidCouponsByUserIdAndMerchant(userId, MerchantCategory, merchantId, pkg.getPrice());
 
         // 计算最终价格（使用最优优惠券）
         UsedCoupon couponUsing = calculateBestPrice(pkg.getPrice(), validCoupons);
@@ -104,50 +98,44 @@ public class OrderService {
         return orderRepository.existsByUserId(userId);
     }
 
-    // 移除静态初始化
-    private List<CouponRule> couponRules;
+    
 
     public UsedCoupon calculateBestPrice(Double originalPrice, List<Coupon> coupons) {
         if (coupons.isEmpty()) {
             return new UsedCoupon();
         }
-        
-        // 动态创建规则列表
-        this.couponRules = createCouponRules(originalPrice);
-        
-        // 使用预定义的规则列表
-        for (CouponRule rule : couponRules) {
-            Optional<Coupon> matchedCoupon = coupons.stream()
-                .filter(rule.condition)
-                .findFirst();
-                
-            if (matchedCoupon.isPresent()) {
-                return new UsedCoupon(matchedCoupon.get(), rule.discount.apply(matchedCoupon.get()));
+
+        double discount = 0.0;
+        Coupon bestCoupon = null;
+        for (Coupon coupon : coupons) {
+            if(computeDiscont(originalPrice, coupon)>discount) {
+                discount = computeDiscont(originalPrice, coupon);
+                bestCoupon = coupon;
             }
         }
-        
-        return new UsedCoupon();
+        UsedCoupon couponUsing = new UsedCoupon(bestCoupon, discount);
+        return couponUsing;
     }
     
-    private List<CouponRule> createCouponRules(Double originalPrice) {
-        List<CouponRule> rules = new ArrayList<>();
-        rules.add(new CouponRule(
-            c -> originalPrice >= 100 && c.getCouponName().equals("满100打8折券(最多可减30元)"),
-            c -> Math.max(originalPrice * 0.2, 30.0)
-        ));
-        rules.add(new CouponRule(
-            c -> originalPrice >= 30 && c.getCouponName().equals("满30减8元"),
-            c -> 8.0
-        ));
-        rules.add(new CouponRule(
-            c -> originalPrice >= 10 && c.getCouponName().equals("无门槛优惠券"),
-            c -> 5.0
-        ));
-        rules.add(new CouponRule(
-            c -> originalPrice < 10 && c.getCouponName().equals("0元免单券(10元以内)"),
-            c -> originalPrice
-        ));
-        return rules;
+    public Double computeDiscont(Double originalPrice, Coupon coupon) {
+        double discount = 0.0;
+        switch (coupon.getType()) {
+            case "满减":
+                discount = coupon.getValue();
+                break;
+            case "折扣":
+                discount = originalPrice*(coupon.getValue()/10);
+                break;
+            case "立减":
+                discount = Math.min(coupon.getValue(), originalPrice);
+                break;
+            case "免单":
+                discount = originalPrice;
+                break;
+            default:
+                throw new IllegalArgumentException("无效的优惠券类型");
+        }
+        return discount;
     }
     
     // 新增内部类定义优惠券规则

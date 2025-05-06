@@ -72,7 +72,6 @@
                 <span class="original-price" v-if="pkg.originalPrice">￥{{ pkg.originalPrice }}</span>
               </div>
               <div class="package-sales">已售 {{ pkg.sales }} 份</div>
-              <button class="buy-btn">立即购买</button>
             </div>
           </div>
         </div>

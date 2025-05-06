@@ -10,7 +10,7 @@
 
       <div class="banner">
         <h2>欢迎加入小众点评!</h2>
-        <p>您可以选择以下优惠券中的一张或多张 (根据活动规则)</p>
+        <p>请选择以下优惠券中的一张</p>
       </div>
 
       <div v-if="loading" class="loading-container">
@@ -18,97 +18,28 @@
         <span>加载中...</span>
       </div>
 
-      <div v-else-if="coupons.length === 0 && !error" class="empty-state">
-        <div class="empty-icon">
-          <i class="fas fa-gift"></i> <!-- 更换图标 -->
-        </div>
-        <h2>暂无新人专享活动</h2>
-        <p>敬请期待更多优惠活动</p>
-        <button class="explore-btn" @click="$router.push('/nearby-food')">去首页逛逛</button>
-      </div>
-
-       <div v-else-if="error" class="empty-state">
-         <div class="empty-icon">
-           <i class="fas fa-exclamation-circle"></i>
-         </div>
-         <h2>加载失败</h2>
-         <p>{{ error }}</p>
-         <button class="explore-btn" @click="fetchNewUserCoupons">重试</button>
-       </div>
-
-
       <div v-else class="coupons-grid">
         <div
-          v-for="coupon in coupons"
-          :key="coupon.id"
+          v-for="coupon in availableCoupons"
+          :key="coupon.choice"
           class="coupon-card"
-          :class="[getCouponClass(coupon), { 'claimed': coupon.claimed, 'unavailable': !coupon.available || coupon.remainingQuantity === 0 }]"
         >
-          <!-- 左侧颜色条 -->
-          <div class="color-bar"></div>
-
           <div class="coupon-content">
             <div class="coupon-header">
-              <h3>{{ coupon.title }}</h3>
-              <div class="coupon-badge remaining" v-if="coupon.available && coupon.remainingQuantity > 0 && coupon.remainingQuantity <= 20">
-                仅剩{{ coupon.remainingQuantity }}张
-              </div>
-              <div class="coupon-badge sold-out" v-if="!coupon.claimed && (!coupon.available || coupon.remainingQuantity === 0)">
-                已抢光
-              </div>
-               <div class="coupon-badge claimed-badge" v-if="coupon.claimed">
-                 <i class="fas fa-check"></i> 已领取
-               </div>
+              <h3>{{ coupon.name }}</h3>
             </div>
-
             <div class="coupon-value-section">
-              <div class="coupon-value">{{ formatCouponValueDisplay(coupon) }}</div>
-              <div class="coupon-condition" v-if="coupon.minAmount > 0">满{{ coupon.minAmount }}元可用</div>
-              <div class="coupon-condition" v-else>无门槛</div>
-            </div>
-
-            <div class="coupon-details">
-              <div class="detail-item" v-if="getCouponScope(coupon)">
-                <i class="fas fa-store"></i> {{ getCouponScope(coupon) }}
-              </div>
-              <div class="detail-item">
-                <i class="fas fa-clock"></i> {{ formatValidity(coupon) }}
-              </div>
-               <div class="detail-item" v-if="coupon.maxDiscount > 0 && (coupon.type === 'PERCENTAGE' || coupon.type === 'FIX_TO_AMOUNT')">
-                 <i class="fas fa-info-circle"></i> 最多优惠￥{{ coupon.maxDiscount }}
-               </div>
+              <div class="coupon-value">{{ coupon.description }}</div>
             </div>
           </div>
-
           <button
             class="claim-btn"
-            :disabled="coupon.claimed || !coupon.available || coupon.remainingQuantity === 0 || claimingId === coupon.id"
-            @click.stop="claimCoupon(coupon)"
+            @click="selectCoupon(coupon.choice)"
           >
-            <span v-if="claimingId === coupon.id"><i class="fas fa-spinner fa-spin"></i> 领取中</span>
-            <span v-else>{{ getCouponButtonText(coupon) }}</span>
+            选择
           </button>
         </div>
       </div>
-
-      <!-- 领取成功弹窗 -->
-      <div class="modal-overlay" v-if="showSuccessModal" @click="closeSuccessModal">
-        <div class="success-modal" @click.stop>
-          <div class="success-icon">
-            <i class="fas fa-check-circle"></i>
-          </div>
-          <h2>领取成功!</h2>
-          <p v-if="claimedCouponInfo"> {{ claimedCouponInfo.title }} 已放入您的卡包</p>
-          <button class="primary-btn" @click="viewMyCoupons">查看我的卡包</button>
-          <button class="secondary-btn" @click="closeSuccessModal">继续领取</button>
-        </div>
-      </div>
-
-       <!-- 领取失败提示 -->
-       <div v-if="claimError" class="claim-error-toast">
-         <i class="fas fa-exclamation-triangle"></i> {{ claimError }}
-       </div>
-
     </div>
   </div>
 </template>
@@ -120,15 +51,14 @@ export default {
   data() {
     return {
       loading: true,
-      coupons: [],
-      userInfo: null,
-      showSuccessModal: false,
-      claimedCouponInfo: null, // 存储刚领取的券信息用于弹窗显示
-      claimingId: null, // 正在领取的优惠券ID，用于按钮loading状态
-      error: null, // 加载错误信息
-      claimError: null, // 领取错误信息
-      claimErrorTimeout: null, // 领取错误提示定时器
-    }
+      availableCoupons: [
+        { choice: 'A', name: '无门槛优惠券', description: '无门槛使用' },
+        { choice: 'B', name: '满30减8元', description: '满30元可用' },
+        { choice: 'C', name: '0元免单券', description: '10元以内免单' },
+        { choice: 'D', name: '满100打8折券', description: '满100元打8折' }
+      ],
+      userInfo: null
+    };
   },
   mounted() {
     const storedUserInfo = localStorage.getItem('userInfo');
@@ -137,154 +67,29 @@ export default {
       return;
     }
     this.userInfo = JSON.parse(storedUserInfo);
-    this.fetchNewUserCoupons();
-  },
-  beforeDestroy() {
-    // 清除可能存在的定时器
-    if (this.claimErrorTimeout) {
-      clearTimeout(this.claimErrorTimeout);
-    }
+    this.loading = false;
   },
   methods: {
-    async fetchNewUserCoupons() {
-      this.loading = true;
-      this.error = null; // 重置错误状态
+    async selectCoupon(choice) {
       try {
-        const response = await axios.get('/api/coupons/new-user', {
+        await axios.post('/api/coupons/issue-by-choice', null, {
           headers: {
             'UserId': this.userInfo.id
-          }
+          },
+          params: { choice }
         });
-        // 对返回的数据进行处理，确保字段完整性
-        this.coupons = response.data.map(c => ({
-          ...c,
-          claimed: c.claimed || false, // 确保有 claimed 字段
-          available: c.available !== undefined ? c.available : c.remainingQuantity > 0, // 确保有 available 字段
-          remainingQuantity: c.remainingQuantity || 0 // 确保有 remainingQuantity 字段
-        }));
-      } catch (error) {
-        console.error('获取新人优惠券失败:', error);
-        this.error = error.response?.data?.message || '加载优惠券失败，请稍后重试';
-        this.coupons = [];
-      } finally {
-        this.loading = false;
-      }
-    },
-    // 格式化优惠券面值显示
-    formatCouponValueDisplay(coupon) {
-      switch (coupon.type) {
-        case 'FIXED_AMOUNT':
-          return `￥${coupon.value}`;
-        case 'FIX_TO_AMOUNT':
-          // 可以显示 "减至X元" 或 "最高抵扣Y元"
-          return `最高抵￥${coupon.maxDiscount || coupon.value}`; // 优先显示maxDiscount
-        case 'PERCENTAGE':
-          return `${coupon.value}折`;
-        default:
-          return '';
-      }
-    },
-    formatValidity(coupon) {
-       if (coupon.endDate) {
-         return `有效期至 ${new Date(coupon.endDate).toLocaleDateString()}`;
-       } else if (coupon.validDays) {
-         return `领取后${coupon.validDays}天内有效`;
-       } else {
-         return '长期有效';
-       }
-    },
-    // 获取优惠券适用范围描述
-    getCouponScope(coupon) {
-      if (coupon.applicableBusiness) {
-        return `限“${coupon.applicableBusiness}”可用`;
-      }
-      if (coupon.applicableCategory) {
-        return `限“${coupon.applicableCategory}”品类`;
-      }
-      return '全场通用'; // 如果都没有限制
-    },
-    getCouponClass(coupon) {
-      switch (coupon.type) {
-        case 'FIXED_AMOUNT': return 'fixed-amount';
-        case 'FIX_TO_AMOUNT': return 'fix-to-amount';
-        case 'PERCENTAGE': return 'percentage';
-        default: return '';
-      }
-    },
-    getCouponButtonText(coupon) {
-      if (coupon.claimed) {
-        return '已领取';
-      } else if (!coupon.available || coupon.remainingQuantity === 0) {
-        return '已抢光';
-      } else {
-        return '立即领取';
-      }
-    },
-    async claimCoupon(coupon) {
-      // 防止重复点击或领取无效券
-      if (coupon.claimed || !coupon.available || coupon.remainingQuantity === 0 || this.claimingId) {
-        return;
-      }
-
-      this.claimingId = coupon.id; // 设置领取中状态
-      this.claimError = null; // 清除之前的错误提示
-      if (this.claimErrorTimeout) clearTimeout(this.claimErrorTimeout);
-
-      try {
-        const response = await axios.post(`/api/coupons/${coupon.id}/claim`, null, {
-          headers: {
-            'UserId': this.userInfo.id
-          }
-        });
-
-        if (response.data.success) {
-          // 更新前端券的状态
-          const index = this.coupons.findIndex(c => c.id === coupon.id);
-          if (index !== -1) {
-            this.$set(this.coupons, index, {
-              ...this.coupons[index],
-              claimed: true,
-              remainingQuantity: this.coupons[index].remainingQuantity - 1, // 数量减一
-              // 如果后端返回了更新后的券信息，可以用 response.data.coupon 更新
-            });
-          }
-
-          // 显示成功弹窗
-          this.claimedCouponInfo = this.coupons[index]; // 保存信息用于弹窗
-          this.showSuccessModal = true;
-        } else {
-          // 显示后端返回的错误信息
-          this.showClaimError(response.data.message || '领取失败，请稍后重试');
-        }
+        alert('优惠券领取成功！');
+        this.$router.push('/my-coupons');
       } catch (error) {
         console.error('领取优惠券失败:', error);
-        const errorMsg = error.response?.data?.message || '领取失败，网络错误或服务器异常';
-        this.showClaimError(errorMsg);
-      } finally {
-        this.claimingId = null; // 清除领取中状态
+        alert('领取失败，请稍后重试');
       }
     },
-    // 显示领取错误提示
-    showClaimError(message) {
-        this.claimError = message;
-        // 3秒后自动隐藏
-        this.claimErrorTimeout = setTimeout(() => {
-            this.claimError = null;
-        }, 3000);
-    },
-    closeSuccessModal() {
-      this.showSuccessModal = false;
-      this.claimedCouponInfo = null;
-    },
-    viewMyCoupons() {
-      this.closeSuccessModal();
-      this.$router.push('/my-coupons');
-    },
     goBack() {
-      this.$router.push('/my'); // 修改跳转路径为 /my
+      this.$router.push('/my');
     }
   }
-}
+};
 </script>
 
 <style scoped>

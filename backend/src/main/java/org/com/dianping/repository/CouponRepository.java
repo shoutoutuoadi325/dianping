@@ -19,4 +19,14 @@ public interface CouponRepository extends JpaRepository<Coupon, Long> {
     // 查询用户所有优惠券的基本信息
     @Query("SELECT c.id, c.couponName, c.userId, c.couponAmount FROM Coupon c WHERE c.userId = :userId")
     List<Object[]> findCouponBasicInfoByUserId(@Param("userId") Long userId);
+    
+    // 新增：查询用户有效优惠券(按商家种类)
+    @Query("SELECT c FROM Coupon c WHERE c.userId = :userId AND c.couponAmount > 0 " +
+           "AND (c.expireTime IS NULL OR c.expireTime > CURRENT_TIMESTAMP) " +
+           "AND (c.category IS NULL OR c.category = :merchantCategory) " +
+           "AND (c.shopId IS NULL OR c.shopId = :merchantId)")
+    List<Coupon> findValidCouponsByUserIdAndMerchant(
+        @Param("userId") Long userId,
+        @Param("merchantCategory") String merchantCategory,
+        @Param("merchantId") Long merchantId);
 }

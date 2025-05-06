@@ -1,8 +1,12 @@
 package org.com.dianping.service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.com.dianping.DTO.OrderResponse;
@@ -16,8 +20,7 @@ import org.com.dianping.repository.OrderRepository;
 import org.com.dianping.repository.PackageGroupRepository;
 import org.springframework.stereotype.Service;
 
-import jakarta.transaction.Transactional;
-
+import jakarta.transaction.Transactional;   
 @Service
 @Transactional
 public class OrderService {
@@ -97,67 +100,46 @@ public class OrderService {
         return orderRepository.existsByUserId(userId);
     }
 
-    public UsedCoupon calculateBestPrice(Double originalPrice, List<Coupon> coupon) {
-        if (coupon.isEmpty()) {
+    public UsedCoupon calculateBestPrice(Double originalPrice, List<Coupon> coupons) {
+        if (coupons.isEmpty()) {
             return new UsedCoupon();
-        } else {
-            if (originalPrice >= 100) {
-                for (Coupon c : coupon) {
-                    if (c.getCouponName().equals("满100打8折券(最多可减30元)")) {
-                        return new UsedCoupon(c, Math.max(originalPrice * 0.2, 30.0));
-                    }
-                }
-                for (Coupon c : coupon) {
-                    if (c.getCouponName().equals("满30减8元")) {
-                        return new UsedCoupon(c, 8.0);
-                    }
-                }
-                for (Coupon c : coupon) {
-                    if (c.getCouponName().equals("无门槛优惠券")) {
-                        return new UsedCoupon(c, 5.0);
-                    }
-                }
-            } else if (originalPrice >= 30) {
-                for (Coupon c : coupon) {
-                    if (c.getCouponName().equals("满30减8元")) {
-                        return new UsedCoupon(c, 8.0);
-                    }
-                }
-                for (Coupon c : coupon) {
-                    if (c.getCouponName().equals("无门槛优惠券")) {
-                        return new UsedCoupon(c, 5.0);
-                    }
-                }
-            } else if (originalPrice >= 10) {
-                for (Coupon c : coupon) {
-                    if (c.getCouponName().equals("无门槛优惠券")) {
-                        return new UsedCoupon(c, 5.0);
-                    }
-                }
-            } else if (originalPrice >= 5) {
-                for (Coupon c : coupon) {
-                    if (c.getCouponName().equals("无门槛优惠券")) {
-                        return new UsedCoupon(c, 5.0);
-                    }
-                }
-                for (Coupon c : coupon) {
-                    if (c.getCouponName().equals("0元免单券(10元以内)")) {
-                        return new UsedCoupon(c, originalPrice);
-                    }
-                }
-            } else {
-                for (Coupon c : coupon) {
-                    if (c.getCouponName().equals("无门槛优惠券")) {
-                        return new UsedCoupon(c, originalPrice);
-                    }
-                }
-                for (Coupon c : coupon) {
-                    if (c.getCouponName().equals("0元免单券(10元以内)")) {
-                        return new UsedCoupon(c, originalPrice);
-                    }
-                }
+        }
+    
+        // 定义优惠券优先级规则
+        List<CouponRule> rules = Arrays.asList(
+// 导入缺失的 Predicate 和 Function 类
+            new CouponRule((Predicate<Coupon>) c -> originalPrice >= 100 && c.getCouponName().equals("满100打8折券(最多可减30元)"),
+                          c -> Math.max(originalPrice * 0.2, 30.0)),
+            new CouponRule(c -> originalPrice >= 30 && c.getCouponName().equals("满30减8元"), 
+                          c -> 8.0),
+            new CouponRule(c -> originalPrice >= 10 && c.getCouponName().equals("无门槛优惠券"), 
+                          c -> 5.0),
+            new CouponRule(c -> originalPrice < 10 && c.getCouponName().equals("0元免单券(10元以内)"), 
+                          c -> originalPrice)
+        );
+    
+        // 按优先级顺序查找最优优惠券
+        for (CouponRule rule : rules) {
+            Optional<Coupon> matchedCoupon = coupons.stream()
+                .filter(rule.condition)
+                .findFirst();
+                
+            if (matchedCoupon.isPresent()) {
+                return new UsedCoupon(matchedCoupon.get(), rule.discount.apply(matchedCoupon.get()));
             }
-            return new UsedCoupon();
+        }
+    
+        return new UsedCoupon();
+    }
+    
+    // 新增内部类定义优惠券规则
+    private static class CouponRule {
+        final Predicate<Coupon> condition;
+        final Function<Coupon, Double> discount;
+    
+        CouponRule(Predicate<Coupon> condition, Function<Coupon, Double> discount) {
+            this.condition = condition;
+            this.discount = discount;
         }
     }
 

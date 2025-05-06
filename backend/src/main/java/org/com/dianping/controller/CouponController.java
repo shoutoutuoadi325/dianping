@@ -28,14 +28,19 @@ public class CouponController {
         @RequestParam(required = false) String merchantCategory) {
         return couponService.getValidCouponsForUser(userId, merchantCategory);
     }
+
+    @GetMapping("/all")
+    public List<Coupon> getAllUserCoupons(@RequestHeader("UserId") Long userId) {
+        return couponService.getAllCouponsByUserId(userId);
+    }
     
     @PostMapping("/issue-by-choice")
     public void issueCouponByChoice(@RequestHeader("UserId") Long userId, @RequestParam char choice) {
         couponService.issueNewUserCoupons(userId, choice);
     }
     
-    @PostMapping("/issue-by-name")
-    public void issueCouponByName(@RequestHeader("UserId") Long userId, @RequestBody Coupon coupon) {
+    @PostMapping("/issuePro")   //根据传入的属性分发优惠券
+    public void issueCouponPro(@RequestHeader("UserId") Long userId, @RequestBody Coupon coupon) {
         coupon.setUserId(userId);
         couponService.saveCoupon(coupon);
     }

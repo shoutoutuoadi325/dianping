@@ -30,6 +30,14 @@ public class Coupon {
     @Column(name = "shop_id", nullable = true)
     private Long shopId;  // 店铺ID，null表示适用所有店铺
 
+    @Column(name = "type", nullable = false)
+    private String type;  // 优惠券类型，例如：满减、折扣等
+
+    @Column(name = "value", nullable = true)
+    private Double value;  // 优惠券的值，例如：满减券的减额金额，折扣券的折扣比例 
+
+    @Column(name = "minAmount", nullable = true)
+    private Double minAmount;  // 最小消费金额，例如：满30减8元的30
     @Column(name = "expire_time", nullable = true)
     private LocalDateTime expireTime;  // 失效时间，null表示永久有效
 
@@ -87,5 +95,23 @@ public class Coupon {
 
     public void setExpireTime(LocalDateTime expireTime) {
         this.expireTime = expireTime;
+    }
+    public String getType() {
+        return type;
+    }
+    public void setType(String type) {
+        this.type = type;
+    }
+    public Double getValue() {
+        return value;
+    }
+    public void setValue(Double value) {
+        this.value = value;
+    }
+    public Double getMiniAmount() {
+        return minAmount;
+    }
+    public void setMiniAmount(Double miniAmount) {
+        this.minAmount = miniAmount;
     }
 }

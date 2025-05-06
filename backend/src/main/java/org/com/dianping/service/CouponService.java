@@ -31,6 +31,10 @@ public class CouponService {
             .collect(Collectors.toList());
     }
 
+    public List<Coupon> getAllCouponsByUserId(Long userId) {
+        return couponRepository.findValidCouponsByUserId(userId);
+    }
+
     public void issueNewUserCoupons(Long userId, char choice) {
         User user = userRepository.findById(userId).orElseThrow(() -> 
             new RuntimeException("用户不存在"));
@@ -41,21 +45,36 @@ public class CouponService {
     
         Coupon coupon_init = new Coupon();
         coupon_init.setUserId(userId);
-        coupon_init.setCouponAmount(1);
-    
+        coupon_init.setExpireTime(null);
+        coupon_init.setShopId(null);
+        coupon_init.setCouponAmount(1);;
         switch (choice) {
             case 'A':
-                coupon_init.setCouponName("无门槛优惠券");
+                coupon_init.setType("满减");
+                coupon_init.setCategory("火锅");
+                coupon_init.setMiniAmount(100.0);
+                coupon_init.setValue(38.0);
+                coupon_init.setCouponName("满100减38元(火锅专用券)");
                 break;
             case 'B':
-                coupon_init.setCouponName("满30减8元");
+                coupon_init.setType("折扣");
+                coupon_init.setCategory("奶茶");
+                coupon_init.setMiniAmount(25.0);
+                coupon_init.setValue(5.0);
+                coupon_init.setCouponName("满25元5折券(奶茶专用券)");
                 break;
             case 'C':
-                coupon_init.setCouponName("0元免单券(10元以内)");
-                break;
+               coupon_init.setType("免单");
+               coupon_init.setCategory("咖啡");
+               coupon_init.setMiniAmount(0.0);
+               coupon_init.setValue(0.0);
+               coupon_init.setCouponName("咖啡畅喝免单券");
             case 'D':
-                coupon_init.setCouponName("满100打8折券(最多可减30元)");
-                break;
+                coupon_init.setType("立减");
+                coupon_init.setCategory(null);
+                coupon_init.setMiniAmount(0.0);
+                coupon_init.setValue(10.0);
+                coupon_init.setCouponName("通用立减10元券");
             default:
                 throw new IllegalArgumentException("无效的选择类型");
         }

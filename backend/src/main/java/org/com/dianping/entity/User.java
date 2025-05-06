@@ -15,7 +15,7 @@ import jakarta.persistence.Table;
  * @author Software Engineering Group
  */
 @Entity
-@Table(name = "User")
+@Table(name = "user")
 public class User {
     /**
      * 用户ID

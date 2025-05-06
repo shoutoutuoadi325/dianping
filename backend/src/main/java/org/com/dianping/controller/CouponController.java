@@ -23,8 +23,10 @@ public class CouponController {
     }
 
     @GetMapping
-    public List<Coupon> getUserCoupons(@RequestHeader("UserId") Long userId) {
-        return couponService.getValidCouponsForUser(userId);
+    public List<Coupon> getUserCoupons(
+        @RequestHeader("UserId") Long userId,
+        @RequestParam(required = false) String merchantCategory) {
+        return couponService.getValidCouponsForUser(userId, merchantCategory);
     }
     
     @PostMapping("/issue-by-choice")

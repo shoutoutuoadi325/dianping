@@ -105,4 +105,10 @@ public class MerchantService {
     public List<Merchant> searchMerchantsWithPinyin(String keyword) {
         return merchantRepository.searchMerchantsWithPinyin(keyword, null, null, null);
     }
+
+    public String getMerchantCategory(Long businessId) {
+        Merchant merchant = merchantRepository.findById(businessId)
+            .orElseThrow(() -> new RuntimeException("商户不存在"));
+        return merchant.getCategory();
+    }
 }

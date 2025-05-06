@@ -1,6 +1,7 @@
 package org.com.dianping.service;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.com.dianping.entity.Coupon;
 import org.com.dianping.entity.User;
@@ -18,8 +19,16 @@ public class CouponService {
         this.userRepository = userRepository;
     }
 
-    public List<Coupon> getValidCouponsForUser(Long userId) {
-        return couponRepository.findValidCouponsByUserId(userId);
+    public List<Coupon> getValidCouponsForUser(Long userId, String merchantCategory) {
+        List<Coupon> validCoupons = couponRepository.findValidCouponsByUserId(userId);
+        
+        // 过滤出适用当前商家种类的优惠券
+        return validCoupons.stream()
+            .filter(coupon -> 
+                coupon.getCategory() == null ||  // 适用所有种类
+                coupon.getCategory().equals(merchantCategory)  // 种类匹配
+            )
+            .collect(Collectors.toList());
     }
 
     public void issueNewUserCoupons(Long userId, char choice) {
@@ -43,7 +52,7 @@ public class CouponService {
                 coupon_init.setUserId(userId);
                 coupon_init.setCouponAmount(1);
             }else if(choice == 'D'){
-                coupon_init.setCouponName("满100打8折券");
+                coupon_init.setCouponName("满100打8折券(最多可减30元)");
                 coupon_init.setUserId(userId);
                 coupon_init.setCouponAmount(1);
             }

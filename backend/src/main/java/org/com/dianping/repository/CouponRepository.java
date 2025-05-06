@@ -29,4 +29,7 @@ public interface CouponRepository extends JpaRepository<Coupon, Long> {
         @Param("merchantCategory") String merchantCategory,
         @Param("merchantId") Long merchantId,
         @Param("initPrice") Double initPrice);
+
+    // 根据用户 ID 查询优惠券
+    List<Coupon> findByUserId(Long userId);
 }

@@ -32,7 +32,7 @@ public class CouponService {
     }
 
     public List<Coupon> getAllCouponsByUserId(Long userId) {
-        return couponRepository.findValidCouponsByUserId(userId);
+        return couponRepository.findByUserId(userId); // 确保此方法在 Repository 中正确实现
     }
 
     public void issueNewUserCoupons(Long userId, char choice) {
@@ -64,17 +64,19 @@ public class CouponService {
                 coupon_init.setCouponName("满25元5折券(奶茶专用券)");
                 break;
             case 'C':
-               coupon_init.setType("免单");
-               coupon_init.setCategory("咖啡");
-               coupon_init.setMiniAmount(0.0);
-               coupon_init.setValue(0.0);
-               coupon_init.setCouponName("咖啡畅喝免单券");
+                coupon_init.setType("免单");
+                coupon_init.setCategory("咖啡");
+                coupon_init.setMiniAmount(0.0);
+                coupon_init.setValue(0.0);
+                coupon_init.setCouponName("咖啡畅喝免单券");
+                break; 
             case 'D':
                 coupon_init.setType("立减");
                 coupon_init.setCategory(null);
                 coupon_init.setMiniAmount(0.0);
                 coupon_init.setValue(10.0);
                 coupon_init.setCouponName("通用立减10元券");
+                break; 
             default:
                 throw new IllegalArgumentException("无效的选择类型");
         }

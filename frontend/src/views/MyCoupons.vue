@@ -93,10 +93,8 @@ export default {
     processedCoupons() {
       const now = new Date();
       return this.allCoupons.map(coupon => {
-        let status = 'unused';
-        if (coupon.used) {
-          status = 'used';
-        } else if (this.isCouponExpired(coupon, now)) {
+        let status = coupon.couponAmount > 0 ? 'unused' : 'used';
+        if (this.isCouponExpired(coupon, now)) {
           status = 'expired';
         }
         return { 
@@ -124,7 +122,7 @@ export default {
     async fetchCoupons() {
       this.loading = true;
       try {
-        const response = await axios.get('/api/coupons', {
+        const response = await axios.get('/api/coupons/all', { // 确保路径正确
           headers: {
             'UserId': this.userInfo.id
           }
@@ -159,7 +157,7 @@ export default {
       return coupon.status;
     },
     goToUse(coupon) {
-      alert(`跳转到适用页面 (功能待实现)`);
+      this.$router.push('/nearby-food');
     },
     goBack() {
       this.$router.push('/my');

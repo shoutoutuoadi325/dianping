@@ -24,7 +24,11 @@ public class CouponController {
 
     @GetMapping("/all")
     public List<Coupon> getAllUserCoupons(@RequestHeader("UserId") Long userId) {
-        return couponService.getAllCouponsByUserId(userId);
+        try {
+            return couponService.getAllCouponsByUserId(userId);
+        } catch (Exception e) {
+            throw new RuntimeException("获取优惠券列表失败", e);
+        }
     }
     
     @PostMapping("/issue-by-choice")

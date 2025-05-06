@@ -35,33 +35,32 @@ public class CouponService {
         User user = userRepository.findById(userId).orElseThrow(() -> 
             new RuntimeException("用户不存在"));
         
-        if (user.getOrderCount() == 0) {
-            // 创建四种优惠券
-            Coupon coupon_init = new Coupon();
-
-            if(choice == 'A'){
-                coupon_init.setCouponName("无门槛优惠券");
-                coupon_init.setUserId(userId);
-                coupon_init.setCouponAmount(1);
-            }else if(choice == 'B'){
-                coupon_init.setCouponName("满30减8元");
-                coupon_init.setUserId(userId);
-                coupon_init.setCouponAmount(1);
-            }else if(choice == 'C'){
-                coupon_init.setCouponName("0元免单券(10元以内)");
-                coupon_init.setUserId(userId);
-                coupon_init.setCouponAmount(1);
-            }else if(choice == 'D'){
-                coupon_init.setCouponName("满100打8折券(最多可减30元)");
-                coupon_init.setUserId(userId);
-                coupon_init.setCouponAmount(1);
-            }
-
-            
-            // 保存优惠券
-            couponRepository.save(coupon_init);
+        if (user.getOrderCount() != 0) {
+            return;
         }
-
+    
+        Coupon coupon_init = new Coupon();
+        coupon_init.setUserId(userId);
+        coupon_init.setCouponAmount(1);
+    
+        switch (choice) {
+            case 'A':
+                coupon_init.setCouponName("无门槛优惠券");
+                break;
+            case 'B':
+                coupon_init.setCouponName("满30减8元");
+                break;
+            case 'C':
+                coupon_init.setCouponName("0元免单券(10元以内)");
+                break;
+            case 'D':
+                coupon_init.setCouponName("满100打8折券(最多可减30元)");
+                break;
+            default:
+                throw new IllegalArgumentException("无效的选择类型");
+        }
+        
+        couponRepository.save(coupon_init);
     }
     
     public void saveCoupon(Coupon coupon) {

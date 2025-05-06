@@ -22,13 +22,6 @@ public class CouponController {
         this.couponService = couponService;
     }
 
-    @GetMapping
-    public List<Coupon> getUserCoupons(
-        @RequestHeader("UserId") Long userId,
-        @RequestParam(required = false) String merchantCategory) {
-        return couponService.getValidCouponsForUser(userId, merchantCategory);
-    }
-
     @GetMapping("/all")
     public List<Coupon> getAllUserCoupons(@RequestHeader("UserId") Long userId) {
         return couponService.getAllCouponsByUserId(userId);

@@ -7,6 +7,7 @@ import org.com.dianping.DTO.OrderRequest;
 import org.com.dianping.DTO.OrderResponse;
 import org.com.dianping.entity.Order;
 import org.com.dianping.service.OrderService;
+import org.com.dianping.service.MerchantService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,9 +15,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/orders")
 public class OrderController {
     private final OrderService orderService;
+    private final MerchantService merchantService;
 
-    public OrderController(OrderService orderService) {
+    public OrderController(OrderService orderService, MerchantService merchantService) {
         this.orderService = orderService;
+        this.merchantService = merchantService;
     }
 
     @PostMapping
@@ -25,7 +28,8 @@ public class OrderController {
             @RequestBody OrderRequest request
     ) {
         try {
-            Order order = orderService.createOrder(userId, request.getPackageId());
+            String merchantCategory = merchantService.getMerchantCategory(request.getBusinessId());
+            Order order = orderService.createOrder(userId, request.getPackageId(), merchantCategory, request.getBusinessId());
             return ResponseEntity.ok(order);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest()

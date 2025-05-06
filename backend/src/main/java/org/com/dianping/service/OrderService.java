@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.com.dianping.DTO.OrderRequest;
 import org.com.dianping.DTO.OrderResponse;
 import org.com.dianping.entity.Coupon;
 import org.com.dianping.entity.Merchant;
@@ -37,7 +36,7 @@ public class OrderService {
     }
 
     @Transactional
-    public Order createOrder(Long userId, Long packageId) {
+    public Order createOrder(Long userId, Long packageId, String MerchantCategory, Long merchantId) {
         // 获取套餐信息
         PackageGroup pkg = packageGroupRepository.findById(packageId)
                 .orElseThrow(() -> new RuntimeException("套餐不存在"));
@@ -45,7 +44,7 @@ public class OrderService {
                 .orElseThrow(() -> new RuntimeException("套餐不存在"));
 
         // 获取用户所有可用优惠券
-        List<Coupon> validCoupons = couponRepository.findValidCouponsByUserId(userId);
+        List<Coupon> validCoupons = couponRepository.findValidCouponsByUserIdAndMerchant(userId, MerchantCategory, merchantId);
 
         // 计算最终价格（使用最优优惠券）
         UsedCoupon couponUsing = calculateBestPrice(pkg.getPrice(), validCoupons);
@@ -104,8 +103,8 @@ public class OrderService {
         } else {
             if (originalPrice >= 100) {
                 for (Coupon c : coupon) {
-                    if (c.getCouponName().equals("满100打8折券")) {
-                        return new UsedCoupon(c, originalPrice * 0.2);
+                    if (c.getCouponName().equals("满100打8折券(最多可减30元)")) {
+                        return new UsedCoupon(c, Math.max(originalPrice * 0.2, 30.0));
                     }
                 }
                 for (Coupon c : coupon) {

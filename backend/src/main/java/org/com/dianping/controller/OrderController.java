@@ -41,22 +41,27 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<?> getOrderDetails(
+    public ResponseEntity<OrderResponse> getOrderDetails(
             @RequestHeader("UserId") Long userId,
             @PathVariable Long orderId
     ) {
-        OrderResponse orderResponse = orderService.getOrderDetails(userId, orderId);
-        return ResponseEntity.ok(orderResponse);
+        try {
+            OrderResponse orderResponse = orderService.getOrderDetails(userId, orderId);
+            return ResponseEntity.ok(orderResponse);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 
     @GetMapping("/user")
-    public List<OrderResponse> getUserOrders(@RequestHeader("UserId") Long userId) {
-        return orderService.getUserOrders(userId);
+    public ResponseEntity<List<OrderResponse>> getUserOrders(@RequestHeader("UserId") Long userId) {
+        List<OrderResponse> orders = orderService.getUserOrders(userId);
+        return ResponseEntity.ok(orders);
     }
 
     @GetMapping("/check-user-orders")
-    public Map<String, Boolean> checkUserOrders(@RequestHeader("UserId") Long userId) {
+    public ResponseEntity<Boolean> checkUserOrders(@RequestHeader("UserId") Long userId) {
         boolean hasOrders = orderService.checkUserOrders(userId);
-        return Map.of("hasOrders", hasOrders);
+        return ResponseEntity.ok(hasOrders);
     }
 }

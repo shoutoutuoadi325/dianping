@@ -101,7 +101,7 @@ export default {
         useRules: ''
       },
       merchantName: ''
-    }
+    };
   },
   async mounted() {
     this.packageId = this.$route.params.id;
@@ -132,7 +132,7 @@ export default {
       this.$router.push(`/businessDetail/${this.packageData.businessId}`);
     }
   }
-}
+};
 </script>
 
 <style scoped>

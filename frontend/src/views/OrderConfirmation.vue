@@ -210,7 +210,7 @@ export default {
       this.loading = true;
       try {
         // 获取当前用户可用于此套餐的优惠券
-        const response = await axios.get('/api/coupons/available', {
+        const response = await axios.get('/api/coupons/all', {
           params: {
             // 使用套餐数据中的 businessId, price, category
             businessId: this.packageData.businessId || this.packageData.businessName, // 优先用ID，没有则用名称（mock兼容）
@@ -245,23 +245,17 @@ export default {
       }
 
       switch (coupon.type) {
-        case 'FIXED_AMOUNT': // 满减券
-          discountAmount = Math.min(coupon.value, packagePrice); // 确保优惠不超过商品价格
+        case '满减': // 满减券
+          discountAmount = Math.min(coupon.value, packagePrice);
           break;
 
-        case 'FIX_TO_AMOUNT': // 减到固定金额券
-          const potentialDiscount = packagePrice - coupon.value;
-          // 确保折扣为正数，且不超过最大限制
-          discountAmount = Math.min(
-            potentialDiscount > 0 ? potentialDiscount : packagePrice, // 至少减到0.01或0
-            coupon.maxDiscount > 0 ? coupon.maxDiscount : packagePrice // 应用最大折扣限制
-          );
+        case '立减': // 立减券
+          discountAmount = Math.min(coupon.value, packagePrice); // 直接减去固定金额
           break;
 
-        case 'PERCENTAGE': // 折扣券
-          const discountValue = coupon.value; // 例如 9折 value是9
+        case '折扣': // 折扣券
+          const discountValue = coupon.value;
           const potentialDiscountPercent = packagePrice * (1 - discountValue / 10);
-          // 应用最大折扣限制
           discountAmount = coupon.maxDiscount > 0
             ? Math.min(potentialDiscountPercent, coupon.maxDiscount)
             : potentialDiscountPercent;

@@ -1,9 +1,74 @@
 <template>
-  // ...existing code...
+  <div class="page-container">
+    <div class="coupon-code">
+      <div class="back-link" @click="goBack">
+        <i class="fas fa-arrow-left"></i> 返回我的订单
+      </div>
+
+      <h1>券码详情</h1>
+
+      <div class="code-section">
+        <h2>券码</h2>
+        <p class="code">{{ couponCode }}</p>
+      </div>
+
+      <div class="qr-section">
+        <h2>二维码</h2>
+        <div class="qr-code">
+          <qrcode-vue :value="couponCode" :size="200" />
+        </div>
+      </div>
+
+      <div class="order-details">
+        <h2>订单详情</h2>
+        <p><strong>套餐：</strong>{{ orderDetails.packageTitle }}</p>
+        <p><strong>商家：</strong>{{ orderDetails.businessName }}</p>
+        <p><strong>下单时间：</strong>{{ formatDate(orderDetails.createTime) }}</p>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
-  // ...existing code...
+import QrcodeVue from 'qrcode.vue';
+import axios from 'axios';
+
+export default {
+  components: { QrcodeVue },
+  data() {
+    return {
+      orderId: null,
+      couponCode: '',
+      orderDetails: {
+        packageTitle: '',
+        businessName: '',
+        createTime: ''
+      }
+    };
+  },
+  async mounted() {
+    this.orderId = this.$route.params.id;
+    await this.fetchOrderDetails();
+  },
+  methods: {
+    async fetchOrderDetails() {
+      try {
+        const response = await axios.get(`/api/orders/${this.orderId}`);
+        this.orderDetails = response.data;
+        this.couponCode = this.orderDetails.couponCode;
+      } catch (error) {
+        console.error('获取订单详情失败:', error);
+      }
+    },
+    formatDate(dateString) {
+      const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+      return new Date(dateString).toLocaleDateString(undefined, options);
+    },
+    goBack() {
+      this.$router.push('/my-orders');
+    }
+  }
+};
 </script>
 
 <style scoped>
@@ -11,157 +76,61 @@
   min-height: 100vh;
   background: #f5f7fa;
   padding: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
-.coupon-code-container {
-  width: 100%;
-  max-width: 500px;
-  margin: 20px auto;
-}
-
-.success-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.success-header i {
-  font-size: 4rem;
-  color: #4CAF50;
-  margin-bottom: 15px;
-}
-
-.success-header h1 {
-  font-size: 1.8rem;
-  color: #333;
-  margin-bottom: 10px;
-}
-
-.success-header p {
-  color: #666;
-  font-size: 1.1rem;
-}
-
-.code-section {
+.coupon-code {
+  max-width: 600px;
+  margin: 0 auto;
   background: white;
   border-radius: 12px;
-  padding: 25px;
-  text-align: center;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
-}
-
-.code-number {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 25px;
-  flex-wrap: wrap;
-}
-
-.code-group {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #333;
-  background: #f8f9fa;
-  padding: 10px 15px;
-  border-radius: 8px;
-  margin: 0 5px 10px;
-  letter-spacing: 2px;
-}
-
-.qr-code {
-  margin-bottom: 20px;
-}
-
-.qr-code img {
-  width: 200px;
-  height: 200px;
-  border-radius: 10px;
+  padding: 20px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-.code-tips {
-  color: #666;
-  font-size: 0.9rem;
-}
-
-.order-info-section {
-  background: white;
-  border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  color: #4a90e2;
   margin-bottom: 20px;
-}
-
-.order-info-section h2 {
-  font-size: 1.3rem;
-  color: #333;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #eee;
-}
-
-.order-info-content {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.info-row {
-  display: flex;
-  justify-content: space-between;
-}
-
-.info-label {
-  color: #666;
-}
-
-.info-value {
-  color: #333;
-  font-weight: 500;
-}
-
-.info-value.price {
-  color: #e53935;
-  font-weight: bold;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 15px;
-}
-
-.primary-btn, .secondary-btn {
-  flex: 1;
-  padding: 15px;
-  border-radius: 8px;
-  border: none;
-  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s;
+  font-size: 1rem;
 }
 
-.primary-btn {
-  background: #4a90e2;
-  color: white;
+.back-link i {
+  margin-right: 8px;
 }
 
-.primary-btn:hover {
-  background: #357abd;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+h1 {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: #333;
 }
 
-.secondary-btn {
-  background: #f8f9fa;
-  border: 1px solid #ddd;
+.code-section, .qr-section, .order-details {
+  margin-bottom: 20px;
+}
+
+.code {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #e53935;
+  text-align: center;
+  margin: 10px 0;
+}
+
+.qr-code {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.order-details p {
+  font-size: 1rem;
   color: #666;
+  margin: 5px 0;
 }
 
-.secondary-btn:hover {
-  background: #eee;
-  transform: translateY(-2px);
+.order-details strong {
+  color: #333;
 }
 </style>

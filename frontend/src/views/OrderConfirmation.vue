@@ -22,7 +22,7 @@
       <div class="order-section coupon-section">
         <div class="section-header">
           <h2>优惠券</h2>
-          <span v-if="!loading && availableCoupons.length > 0" class="coupon-count">{{ availableCoupons.length }}张可用</span>
+          <span v-if="!loading && availableCoupons.length > 0" class="coupon-count">{{ getCouponCount() }}</span>
         </div>
 
         <div v-if="loading" class="loading-state">
@@ -88,20 +88,25 @@
             <div class="coupon-text">不使用优惠券</div>
           </div>
 
-          <!-- 可用优惠券列表 -->
+          <!-- 优惠券列表（包括可用和不可用） -->
           <div
             v-for="coupon in availableCoupons"
             :key="coupon.id"
             class="coupon-option"
-            @click="selectCoupon(coupon)"
+            :class="{'disabled': !isCouponUsable(coupon)}"
+            @click="isCouponUsable(coupon) && selectCoupon(coupon)"
           >
             <div class="radio-button">
-              <div class="radio-inner" :class="{active: selectedCoupon && selectedCoupon.id === coupon.id}"></div>
+              <div class="radio-inner" :class="{
+                active: selectedCoupon && selectedCoupon.id === coupon.id,
+                disabled: !isCouponUsable(coupon)
+              }"></div>
             </div>
 
-            <div class="coupon-card" :class="getCouponClass(coupon)">
+            <div class="coupon-card" :class="[getCouponClass(coupon), {'disabled': !isCouponUsable(coupon)}]">
               <div class="coupon-left">
                 <div class="coupon-value">{{ formatCouponValueDisplay(coupon) }}</div>
+                <div class="coupon-name">{{ coupon.couponName }}</div>
                 <div class="coupon-condition" v-if="coupon.minAmount > 0">
                   满{{ coupon.minAmount }}元可用
                 </div>
@@ -113,10 +118,14 @@
               <div class="coupon-right">
                 <div class="coupon-title">{{ coupon.title }}</div>
                 <div class="coupon-desc">{{ getCouponDescription(coupon) }}</div>
+                <!-- 添加不可用原因提示 -->
+                <div v-if="!isCouponUsable(coupon)" class="coupon-unusable-reason">
+                  {{ getUnusableReason(coupon) }}
+                </div>
                 <div class="coupon-validity">{{ formatValidity(coupon) }}</div>
-                 <div class="coupon-discount-preview">
-                   预计优惠: ￥{{ calculateDiscount(coupon).toFixed(2) }}
-                 </div>
+                <div class="coupon-discount-preview">
+                  预计优惠: ￥{{ calculateDiscount(coupon).toFixed(2) }}
+                </div>
               </div>
             </div>
           </div>
@@ -142,6 +151,15 @@ export default {
         imageUrl: '',
         category: '' // 套餐所属品类，用于优惠券匹配
       },
+      merchantData: {
+        id: '',
+        merchantName: '',
+        category: '', // 商家品类，用于优惠券匹配
+        rating: 0,
+        address: '',
+        avgPrice: 0,
+        // 其他商家信息
+      },
       availableCoupons: [],
       selectedCoupon: null,
       loading: true,
@@ -151,6 +169,10 @@ export default {
     }
   },
   computed: {
+    // 添加新的计算属性：实际可用的优惠券列表
+    usableCoupons() {
+      return this.availableCoupons.filter(this.isCouponUsable);
+    },
     // 计算当前选定优惠券的折扣金额
     discount() {
       if (!this.selectedCoupon) return 0;
@@ -189,18 +211,20 @@ export default {
       try {
         const response = await axios.get(`/api/packages/${this.packageId}`);
         this.packageData = response.data;
-        // 确保价格是数字
         this.packageData.price = Number(this.packageData.price) || 0;
 
-        // 如果图片没有完整URL，添加前缀 (根据实际情况调整)
-        if (this.packageData.imageUrl && !this.packageData.imageUrl.startsWith('http')) {
-          // 假设后端返回相对路径 /images/xxx.jpg
-           this.packageData.imageUrl = `http://localhost:8080${this.packageData.imageUrl}`;
+        // 获取商家信息
+        if (this.packageData.merchantId) {
+          const merchantResponse = await axios.get(`/api/businesses/${this.packageData.merchantId}`);
+          this.merchantData = merchantResponse.data;
+          // 更新商家名称到 packageData
+          this.packageData.businessName = this.merchantData.merchantName;
         }
-        // 假设后端返回了 businessId 和 category
-        // this.packageData.businessId = response.data.businessId;
-        // this.packageData.category = response.data.category;
 
+        // 处理图片URL
+        if (this.packageData.imageUrl && !this.packageData.imageUrl.startsWith('http')) {
+          this.packageData.imageUrl = `http://localhost:8080${this.packageData.imageUrl}`;
+        }
       } catch (error) {
         console.error('获取套餐详情失败:', error);
         // 可以添加用户提示
@@ -209,16 +233,13 @@ export default {
     async fetchAvailableCoupons() {
       this.loading = true;
       try {
-        // 获取当前用户可用于此套餐的优惠券
-        const response = await axios.get('/api/coupons/available', {
+        const response = await axios.get('/api/coupons/all', {
           params: {
-            // 使用套餐数据中的 businessId, price, category
-            businessId: this.packageData.businessId || this.packageData.businessName, // 优先用ID，没有则用名称（mock兼容）
+            businessId: this.merchantData.id,
             amount: this.packageData.price,
-            category: this.packageData.category || '' // 如果没有品类信息，传空
+            category: this.merchantData.category // 使用商家的品类
           },
           headers: {
-            // 重要：将用户ID放在请求头中，与 mock API 对应
             'UserId': this.userInfo.id
           }
         });
@@ -227,7 +248,6 @@ export default {
       } catch (error) {
         console.error('获取可用优惠券失败:', error);
         this.availableCoupons = [];
-        // 可以添加用户提示
       } finally {
         this.loading = false;
       }
@@ -237,31 +257,25 @@ export default {
       if (!coupon) return 0;
 
       const packagePrice = this.packageData.price;
-      let discountAmount = 0;
-
-      // 检查是否满足最低消费金额
-      if (packagePrice < coupon.minAmount) {
-        return 0;
+      
+      // 检查品类匹配
+      if (coupon.category && coupon.category !== this.merchantData.category) {
+        return 0; // 品类不匹配时返回0
       }
 
+      let discountAmount = 0;
       switch (coupon.type) {
-        case 'FIXED_AMOUNT': // 满减券
-          discountAmount = Math.min(coupon.value, packagePrice); // 确保优惠不超过商品价格
+        case '满减': // 满减券
+          discountAmount = Math.min(coupon.value, packagePrice);
           break;
 
-        case 'FIX_TO_AMOUNT': // 减到固定金额券
-          const potentialDiscount = packagePrice - coupon.value;
-          // 确保折扣为正数，且不超过最大限制
-          discountAmount = Math.min(
-            potentialDiscount > 0 ? potentialDiscount : packagePrice, // 至少减到0.01或0
-            coupon.maxDiscount > 0 ? coupon.maxDiscount : packagePrice // 应用最大折扣限制
-          );
+        case '立减': // 立减券
+          discountAmount = Math.min(coupon.value, packagePrice); // 直接减去固定金额
           break;
 
-        case 'PERCENTAGE': // 折扣券
-          const discountValue = coupon.value; // 例如 9折 value是9
+        case '折扣': // 折扣券
+          const discountValue = coupon.value;
           const potentialDiscountPercent = packagePrice * (1 - discountValue / 10);
-          // 应用最大折扣限制
           discountAmount = coupon.maxDiscount > 0
             ? Math.min(potentialDiscountPercent, coupon.maxDiscount)
             : potentialDiscountPercent;
@@ -273,14 +287,17 @@ export default {
       // 保证折扣金额不为负数且不超过原价
       return Math.max(0, Math.min(discountAmount, packagePrice));
     },
-    // 自动选择最优惠的券 (优惠金额最大的)
+    // 修改优惠券选择逻辑，使用过滤后的列表
     selectBestCoupon() {
-      if (this.availableCoupons.length === 0) return;
+      if (this.usableCoupons.length === 0) {
+        this.selectedCoupon = null;
+        return;
+      }
 
       let bestCoupon = null;
       let maxDiscount = 0;
 
-      this.availableCoupons.forEach(coupon => {
+      this.usableCoupons.forEach(coupon => {
         const currentDiscount = this.calculateDiscount(coupon);
         if (currentDiscount > maxDiscount) {
           maxDiscount = currentDiscount;
@@ -288,23 +305,18 @@ export default {
         }
       });
 
-      // 只有当存在有效优惠时才自动选择
-      if (bestCoupon && maxDiscount > 0) {
-        this.selectedCoupon = bestCoupon;
-      } else {
-        this.selectedCoupon = null; // 如果没有券能产生优惠，则不选
-      }
+      this.selectedCoupon = bestCoupon;
     },
     // 格式化优惠券面值显示 (弹窗和已选区域)
     formatCouponValueDisplay(coupon) {
       switch (coupon.type) {
-        case 'FIXED_AMOUNT':
+        case '满减':
           return `￥${coupon.value}`;
-        case 'FIX_TO_AMOUNT':
+        case '立减':
           // 显示 "减至X元" 可能更清晰，或者直接显示优惠金额
           // return `减至￥${coupon.value}`;
           return `￥${this.calculateDiscount(coupon).toFixed(2)}`; // 直接显示优惠额
-        case 'PERCENTAGE':
+        case '折扣':
           return `${coupon.value}折`;
         default:
           return '';
@@ -314,28 +326,27 @@ export default {
     getCouponValueClass(coupon) {
        if (!coupon) return '';
        switch (coupon.type) {
-         case 'FIXED_AMOUNT': return 'fixed-amount-text';
-         case 'FIX_TO_AMOUNT': return 'fix-to-amount-text';
-         case 'PERCENTAGE': return 'percentage-text';
+         case '满减': return 'fixed-amount-text';
+         case '立减': return 'fix-to-amount-text';
+         case '折扣': return 'percentage-text';
          default: return '';
        }
     },
     getCouponDescription(coupon) {
       let description = [];
-      // 适用范围
-      if (coupon.applicableCategory) {
-        description.push(`限品类: ${coupon.applicableCategory}`);
+      
+      if (coupon.couponName) {
+        description.push(coupon.couponName);
       }
-      if (coupon.applicableBusiness) {
-        description.push(`限商家: ${coupon.applicableBusiness}`);
+
+      if (coupon.category) {
+        description.push(`限${coupon.category}商家使用`);
       }
-      // 最大抵扣
-      if (coupon.maxDiscount > 0 && (coupon.type === 'PERCENTAGE' || coupon.type === 'FIX_TO_AMOUNT')) {
-        description.push(`最多优惠￥${coupon.maxDiscount}`);
+      
+      if (coupon.minAmount > 0) {
+        description.push(`满${coupon.minAmount}元可用`);
       }
-      if (description.length === 0) {
-        return '全场通用';
-      }
+
       return description.join(' | ');
     },
     formatValidity(coupon) {
@@ -366,11 +377,11 @@ export default {
     },
     getCouponClass(coupon) {
       switch (coupon.type) {
-        case 'FIXED_AMOUNT':
+        case '满减':
           return 'fixed-amount';
-        case 'FIX_TO_AMOUNT':
+        case '立减':
           return 'fix-to-amount';
-        case 'PERCENTAGE':
+        case '折扣':
           return 'percentage';
         default:
           return '';
@@ -387,44 +398,72 @@ export default {
       this.$router.go(-1);
     },
     async submitOrder() {
-      if (this.submitting) return; // 防止重复点击
+      if (this.submitting) return;
       this.submitting = true;
 
       try {
         const orderData = {
           packageId: this.packageId,
-          packagePrice: this.packageData.price, // 套餐原价
-          finalPrice: this.finalPrice, // 最终支付价格
-          couponId: this.selectedCoupon ? this.selectedCoupon.id : null, // 使用的优惠券ID
-          discount: this.discount, // 优惠金额
-          businessId: this.packageData.businessId || this.packageData.businessName // 商家ID或名称
-          // 可能还需要其他信息，如 userId (通过header传)
+          packagePrice: this.packageData.price,
+          businessId: this.merchantData.id,
+          couponId: this.selectedCoupon ? this.selectedCoupon.id : null,
+          discount: this.discount,
+          finalPrice: this.finalPrice
         };
+
+        console.log('提交的订单数据:', orderData); // 添加日志
 
         const response = await axios.post('/api/orders', orderData, {
           headers: {
-            'UserId': this.userInfo.id // 在请求头中传递用户ID
+            'UserId': this.userInfo.id,
+            'Content-Type': 'application/json'
           }
         });
 
-        // 假设后端成功后返回包含订单ID的数据
-        if (response.data && response.data.orderId) {
-           // 跳转到支付页面或订单详情/券码页面
-           this.$router.push(`/coupon-code/${response.data.orderId}`);
-        } else {
-           // 处理后端未返回预期数据的情况
-           console.error('订单创建成功，但未收到订单ID:', response.data);
-           alert('订单创建成功，但处理遇到问题，请稍后查看订单状态');
-           this.$router.push('/my-orders'); // 跳转到订单列表
-        }
+        console.log('服务器响应:', response.data); // 添加日志
 
+        if (response.data && response.data.orderId) {
+          this.$message.success('下单成功！');
+          this.$router.push({
+            path: '/my-orders',
+            query: { highlight: response.data.orderId }
+          });
+        }
       } catch (error) {
         console.error('提交订单失败:', error);
-        const errorMsg = error.response?.data?.message || '订单提交失败，请重试';
-        alert(errorMsg);
+        console.error('错误详情:', error.response?.data); // 添加详细错误信息
+        this.$message.error(error.response?.data?.message || '订单提交失败，请重试');
       } finally {
         this.submitting = false;
       }
+    },
+    // 添加新方法：检查优惠券是否可用
+    isCouponUsable(coupon) {
+      // 检查品类匹配
+      if (coupon.category && coupon.category !== this.merchantData.category) {
+        return false;
+      }
+      // 检查满减门槛
+      if (coupon.minAmount && this.packageData.price < coupon.minAmount) {
+        return false;
+      }
+      return true;
+    },
+    // 添加新方法：获取优惠券不可用原因
+    getUnusableReason(coupon) {
+      if (coupon.category && coupon.category !== this.merchantData.category) {
+        return `仅限${coupon.category}商家使用`;
+      }
+      if (coupon.minAmount && this.packageData.price < coupon.minAmount) {
+        return `未满${coupon.minAmount}元`;
+      }
+      return '';
+    },
+    // 修改优惠券数量显示逻辑
+    getCouponCount() {
+      const usableCount = this.availableCoupons.filter(this.isCouponUsable).length;
+      const totalCount = this.availableCoupons.length;
+      return `${usableCount}/${totalCount}张可用`;
     }
   }
 }
@@ -784,6 +823,11 @@ export default {
   background: #4a90e2;
 }
 
+.radio-inner.disabled {
+  border-color: #ccc;
+  background-color: #f5f5f5;
+}
+
 .coupon-text {
   font-size: 1rem;
   color: #333; /* 调整颜色 */
@@ -800,8 +844,17 @@ export default {
   border: 1px solid #eee; /* 添加边框 */
 }
 
-/* 移除伪元素实现的虚线，简化结构 */
-/* .coupon-card::before { ... } */
+.coupon-card.disabled {
+  opacity: 0.8;
+}
+
+.coupon-card.disabled .coupon-left {
+  background: #999 !important;
+}
+
+.coupon-card.disabled .coupon-right {
+  background: #f5f5f5;
+}
 
 .coupon-left {
   width: 85px; /* 调整宽度 */
@@ -844,6 +897,14 @@ export default {
   line-height: 1.2;
 }
 
+.coupon-name {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 4px;
+  word-break: break-all;
+  text-align: center;
+}
+
 .coupon-condition {
   font-size: 0.75rem; /* 调整字体 */
   opacity: 0.9;
@@ -870,6 +931,7 @@ export default {
   font-size: 0.75rem; /* 调整字体 */
   color: #aaa; /* 调整颜色 */
 }
+
 .coupon-discount-preview {
   font-size: 0.8rem;
   color: #e53935;
@@ -877,10 +939,20 @@ export default {
   margin-top: 5px;
 }
 
+.coupon-unusable-reason {
+  color: #ff4d4f;
+  font-size: 0.75rem;
+  margin-top: 4px;
+  padding: 2px 0;
+}
 
 /* 不同类型优惠券的样式 */
 .fixed-amount .coupon-left { background: #4a90e2; }
 .fix-to-amount .coupon-left { background: #e53935; }
 .percentage .coupon-left { background: #ff9800; }
 
+.coupon-option.disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
 </style>

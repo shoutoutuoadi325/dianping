@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -29,18 +30,18 @@ public class Order {
     @Column(nullable = false)
     private String businessName;
 
-
     @Column(nullable = false)
     private Double originalPrice;
 
     @OneToOne
+    @JoinColumn(name = "best_coupon_id")  // 明确指定关联字段名
     private Coupon bestCoupon;
 
     @Column(nullable = false)
     private Double finalPrice;
 
-    @Column(nullable = false, unique = true)
-    private String voucherCode;
+    @Column(nullable = false)
+    private String voucherCode;  // 移除 unique 约束，因为我们用其他方式保证唯一性
 
     @Column(nullable = false)
     private String status; // 订单状态：未使用/已使用

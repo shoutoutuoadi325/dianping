@@ -2,7 +2,6 @@ package org.com.dianping.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -37,41 +36,61 @@ public class OrderService {
     }
 
     @Transactional
-    public Order createOrder(Long userId, Long packageId, String MerchantCategory, Long merchantId) {
-        // 获取套餐信息
+    public Order createOrder(Long userId, Long packageId, Long merchantId) {
+        // 获取套餐信息和商家信息
         PackageGroup pkg = packageGroupRepository.findById(packageId)
                 .orElseThrow(() -> new RuntimeException("套餐不存在"));
-        Merchant merchant = merchantRepository.findById(pkg.getMerchantId())
-                .orElseThrow(() -> new RuntimeException("套餐不存在"));
+        Merchant merchant = merchantRepository.findById(merchantId)
+                .orElseThrow(() -> new RuntimeException("商家不存在"));
 
-        // 获取用户所有可用优惠券
-        List<Coupon> validCoupons = couponRepository.findValidCouponsByUserIdAndMerchant(userId, MerchantCategory, merchantId, pkg.getPrice());
+        // 获取可用优惠券
+        List<Coupon> validCoupons = couponRepository.findValidCouponsByUserIdAndMerchant(
+            userId, 
+            merchant.getCategory(),
+            merchant.getId(), 
+            pkg.getPrice()
+        );
 
-        // 计算最终价格（使用最优优惠券）
-        UsedCoupon couponUsing = calculateBestPrice(pkg.getPrice(), validCoupons);
-        Double finalPrice = pkg.getPrice() - couponUsing.Discount;
-        Coupon bestCoupon = couponUsing.coupon;
+        // 过滤和计算最优优惠券
+        List<Coupon> usableCoupons = validCoupons.stream()
+                .filter(coupon -> isCouponApplicable(coupon, merchant.getCategory()))
+                .collect(Collectors.toList());
 
-        // 生成唯一券码
-        String voucherCode = generateVoucherCode();
-
-        // 创建订单
+        UsedCoupon couponUsing = calculateBestPrice(pkg.getPrice(), usableCoupons);
+        
+        // 创建新订单
         Order order = new Order();
         order.setUserId(userId);
         order.setPackageId(packageId);
         order.setCreateTime(LocalDateTime.now());
         order.setBusinessName(merchant.getMerchantName());
         order.setOriginalPrice(pkg.getPrice());
-        order.setBestCoupon(bestCoupon);
-        order.setFinalPrice(finalPrice);
-        order.setVoucherCode(voucherCode);
+        order.setBestCoupon(couponUsing.coupon);
+        order.setFinalPrice(Math.max(pkg.getPrice() - couponUsing.Discount, 0.01));
+        order.setVoucherCode(generateVoucherCode());
         order.setStatus("未使用");
 
-        // 保存订单并更新销量
-        orderRepository.save(order);
+        // 保存订单
+        Order savedOrder = orderRepository.save(order);
+
+        // 更新套餐销量
         packageGroupRepository.incrementSales(packageId);
 
-        return order;
+        // 如果使用了优惠券，需要标记优惠券为已使用
+        if (couponUsing.coupon != null) {
+            // 这里可以添加标记优惠券使用状态的逻辑
+        }
+
+        return savedOrder;
+    }
+
+    private boolean isCouponApplicable(Coupon coupon, String merchantCategory) {
+        // 如果优惠券没有指定品类限制，则可用于所有品类
+        if (coupon.getCategory() == null) {
+            return true;
+        }
+        // 优惠券指定了品类，则必须与商家品类匹配
+        return coupon.getCategory().equals(merchantCategory);
     }
 
     public OrderResponse getOrderDetails(Long userId, Long orderId) {
@@ -118,13 +137,21 @@ public class OrderService {
     }
     
     public Double computeDiscont(Double originalPrice, Coupon coupon) {
+        // 检查是否满足最低消费要求
+        if (coupon.getMiniAmount() != null && originalPrice < coupon.getMiniAmount()) {
+            return 0.0;
+        }
+
         double discount = 0.0;
         switch (coupon.getType()) {
             case "满减":
-                discount = coupon.getValue();
+                // 满减券必须满足最低消费金额
+                if (originalPrice >= coupon.getMiniAmount()) {
+                    discount = coupon.getValue();
+                }
                 break;
             case "折扣":
-                discount = originalPrice*(coupon.getValue()/10);
+                discount = originalPrice * (1 - coupon.getValue()/10);
                 break;
             case "立减":
                 discount = Math.min(coupon.getValue(), originalPrice);
@@ -135,7 +162,7 @@ public class OrderService {
             default:
                 throw new IllegalArgumentException("无效的优惠券类型");
         }
-        return discount;
+        return Math.min(discount, originalPrice); // 确保优惠不超过原价
     }
     
     // 新增内部类定义优惠券规则
@@ -150,8 +177,36 @@ public class OrderService {
     }
 
     private String generateVoucherCode() {
-        String uuid = UUID.randomUUID().toString().replace("-", "");
-        return uuid.substring(0, 16).toUpperCase();
+        String voucherCode;
+        boolean isUnique;
+        int attempts = 0;
+        final int MAX_ATTEMPTS = 10;
+
+        do {
+            // 使用更长的随机码以降低重复概率
+            // 格式: 年月日(8位) + 时间戳后6位 + 随机数(6位)
+            LocalDateTime now = LocalDateTime.now();
+            String datePart = String.format("%04d%02d%02d", 
+                now.getYear(), now.getMonthValue(), now.getDayOfMonth());
+            String timestampPart = String.format("%06d", 
+                System.currentTimeMillis() % 1000000);
+            String randomPart = String.format("%06d", 
+                (int)(Math.random() * 1000000));
+            
+            voucherCode = datePart + timestampPart + randomPart;
+
+            // 检查券码是否已存在
+            isUnique = !orderRepository.existsByVoucherCode(voucherCode);
+            attempts++;
+
+            if (attempts >= MAX_ATTEMPTS) {
+                // 如果多次尝试都失败，加入毫秒级时间戳作为后缀确保唯一性
+                voucherCode = voucherCode + System.nanoTime();
+                break;
+            }
+        } while (!isUnique);
+
+        return voucherCode;
     }
 }
 

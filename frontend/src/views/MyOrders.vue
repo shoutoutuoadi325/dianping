@@ -27,6 +27,7 @@
           v-for="order in orders" 
           :key="order.id" 
           class="order-card"
+          :class="{ 'highlight': isHighlighted(order.id) }"
           @click="goToOrderDetail(order.id)"
         >
           <div class="order-header">
@@ -57,12 +58,15 @@ export default {
     return {
       loading: true,
       orders: [],
-      userInfo: null
+      userInfo: null,
+      highlightOrderId: null
     }
   },
   mounted() {
     this.userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
     this.fetchOrders();
+    // 获取URL中的高亮订单ID
+    this.highlightOrderId = this.$route.query.highlight;
   },
   methods: {
     async fetchOrders() {
@@ -102,6 +106,9 @@ export default {
     },
     goBack() {
       this.$router.push('/my');
+    },
+    isHighlighted(orderId) {
+      return this.highlightOrderId && orderId.toString() === this.highlightOrderId.toString();
     }
   }
 }
@@ -214,6 +221,16 @@ export default {
 .order-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.order-card.highlight {
+  animation: highlight 2s ease-in-out;
+  border: 2px solid #4a90e2;
+}
+
+@keyframes highlight {
+  0% { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4); }
+  100% { transform: translateY(0); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 }
 
 .order-header {

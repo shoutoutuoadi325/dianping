@@ -1,62 +1,77 @@
 package org.com.dianping.controller;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
-import org.com.dianping.DTO.OrderRequest;
-import org.com.dianping.DTO.OrderResponse;
 import org.com.dianping.entity.Order;
 import org.com.dianping.service.OrderService;
-import org.com.dianping.service.MerchantService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
     private final OrderService orderService;
-    private final MerchantService merchantService;
 
-    public OrderController(OrderService orderService, MerchantService merchantService) {
+    public OrderController(OrderService orderService) {
         this.orderService = orderService;
-        this.merchantService = merchantService;
     }
 
     @PostMapping
     public ResponseEntity<?> createOrder(
             @RequestHeader("UserId") Long userId,
-            @RequestBody OrderRequest request
-    ) {
+            @RequestBody Map<String, Object> orderRequest) {
         try {
-            String merchantCategory = merchantService.getMerchantCategory(request.getBusinessId());
-            Order order = orderService.createOrder(userId, request.getPackageId(), merchantCategory, request.getBusinessId());
-            return ResponseEntity.ok(order);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of(
-                            "error", "订单创建失败",
-                            "message", e.getMessage()
-                    ));
+            // 从请求体中获取必要的参数
+            Long packageId = Long.valueOf(orderRequest.get("packageId").toString());
+            Long merchantId = Long.valueOf(orderRequest.get("businessId").toString());
+
+            // 创建订单
+            Order savedOrder = orderService.createOrder(userId, packageId, merchantId);
+
+            // 构造返回结果
+            Map<String, Object> response = new HashMap<>();
+            response.put("orderId", savedOrder.getId());
+            response.put("message", "订单创建成功");
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace(); // 打印错误堆栈便于调试
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "创建订单失败: " + e.getMessage());
+            return ResponseEntity.badRequest().body(error);
         }
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<OrderResponse> getOrderDetails(
+    public ResponseEntity<?> getOrderDetails(
             @RequestHeader("UserId") Long userId,
             @PathVariable Long orderId
     ) {
         try {
-            OrderResponse orderResponse = orderService.getOrderDetails(userId, orderId);
-            return ResponseEntity.ok(orderResponse);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.ok(orderService.getOrderDetails(userId, orderId));
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", "获取订单详情失败: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
         }
     }
 
     @GetMapping("/user")
-    public ResponseEntity<List<OrderResponse>> getUserOrders(@RequestHeader("UserId") Long userId) {
-        List<OrderResponse> orders = orderService.getUserOrders(userId);
-        return ResponseEntity.ok(orders);
+    public ResponseEntity<?> getUserOrders(@RequestHeader("UserId") Long userId) {
+        try {
+            return ResponseEntity.ok(orderService.getUserOrders(userId));
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", "获取订单列表失败: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
     }
 
     @GetMapping("/check-user-orders")

@@ -44,7 +44,9 @@
           :class="[getCouponClass(coupon), coupon.status]"
         >
           <div class="coupon-left">
-            <div class="coupon-value">{{ coupon.couponName }}</div>
+            <div class="coupon-value">{{ formatCouponValueDisplay(coupon) }}</div>
+            <div class="coupon-name">{{ coupon.title || coupon.couponName }}</div>
+            <!-- 移除了门槛显示部分 -->
           </div>
 
           <div class="coupon-right">
@@ -154,7 +156,35 @@ export default {
       return '长期有效';
     },
     getCouponClass(coupon) {
-      return coupon.status;
+      if (coupon.status !== 'unused') {
+        return coupon.status;
+      }
+      
+      switch (coupon.type) {
+        case '满减':
+          return 'fixed-amount';
+        case '立减':
+          return 'fix-to-amount';
+        case '折扣':
+          return 'percentage';
+        default:
+          return 'fixed-amount'; // 默认样式
+      }
+    },
+    
+    // 格式化优惠券面值显示
+    formatCouponValueDisplay(coupon) {
+      switch (coupon.type) {
+        case '满减':
+          return `￥${coupon.value}`;
+        case '立减':
+          return `￥${coupon.value}`;
+        case '折扣':
+          return `${coupon.value}折`;
+        default:
+          // 如果没有类型或值，则显示名称
+          return coupon.value ? `￥${coupon.value}` : coupon.couponName;
+      }
     },
     goToUse(coupon) {
       this.$router.push('/nearby-food');
@@ -330,26 +360,27 @@ export default {
 }
 
 .coupon-left {
-  width: 90px;
+  width: 110px;
   color: white;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 15px 5px;
+  padding: 15px 8px;
   text-align: center;
   position: relative;
   flex-shrink: 0;
 }
+
 .coupon-left::after {
-    content: '';
-    position: absolute;
-    top: 10px;
-    bottom: 10px;
-    right: -1px;
-    width: 2px;
-    background: linear-gradient(to bottom, white 5px, transparent 5px, transparent 10px);
-    background-size: 100% 15px;
+  content: '';
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  right: -1px;
+  width: 2px;
+  background: linear-gradient(to bottom, white 5px, transparent 5px, transparent 10px);
+  background-size: 100% 15px;
 }
 
 .coupon-right {
@@ -375,13 +406,22 @@ export default {
 .coupon-value {
   font-size: 1.4rem;
   font-weight: bold;
-  margin-bottom: 4px;
+  margin-bottom: 6px; /* 略微增加与下方元素间距 */
   line-height: 1.2;
 }
 
-.coupon-condition {
+.coupon-name {
   font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 4px;
+  word-break: break-all;
+  text-align: center;
+}
+
+.coupon-condition {
+  font-size: 0.75rem;
   opacity: 0.9;
+  line-height: 1.2;
 }
 
 .coupon-title {
@@ -445,6 +485,7 @@ export default {
 }
 
 .fixed-amount .coupon-left { background: #4a90e2; }
+.fix-to-amount .coupon-left { background: #e53935; }
 .percentage .coupon-left { background: #ff9800; }
 
 .coupon-card.used,

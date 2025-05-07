@@ -59,9 +59,9 @@ public class CouponService {
             case 'B':
                 coupon_init.setType("折扣");
                 coupon_init.setCategory("奶茶");
-                coupon_init.setMiniAmount(25.0);
-                coupon_init.setValue(5.0);
-                coupon_init.setCouponName("满25元5折券(奶茶专用券)");
+                coupon_init.setMiniAmount(9.0);
+                coupon_init.setValue(8.0);
+                coupon_init.setCouponName("满9元8折券(奶茶专用券)");
                 break;
             case 'C':
                 coupon_init.setType("免单");

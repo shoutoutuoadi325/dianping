@@ -53,7 +53,7 @@ export default {
       loading: true,
       availableCoupons: [
         { choice: 'A', name: '火锅满减', description: '满100减38元(火锅专用券)' },
-        { choice: 'B', name: '奶茶折扣', description: '满25元5折券(奶茶专用券)' },
+        { choice: 'B', name: '奶茶折扣', description: '满9元8折券(奶茶专用券)' },
         { choice: 'C', name: '咖啡免单', description: '咖啡畅喝免单券' },
         { choice: 'D', name: '通用立减', description: '通用立减10元券' }
       ],

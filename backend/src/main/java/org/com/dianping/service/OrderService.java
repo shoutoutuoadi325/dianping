@@ -65,7 +65,12 @@ public class OrderService {
         order.setCreateTime(LocalDateTime.now());
         order.setBusinessName(merchant.getMerchantName());
         order.setOriginalPrice(pkg.getPrice());
-        order.setBestCoupon(couponUsing.coupon);
+        if(couponUsing.coupon!=null) {
+            order.setBestCoupon(couponUsing.coupon.getId());
+        }else{
+            order.setBestCoupon(null);
+        }
+
         order.setFinalPrice(Math.max(pkg.getPrice() - couponUsing.Discount, 0.01));
         order.setVoucherCode(generateVoucherCode());
         order.setStatus("未使用");

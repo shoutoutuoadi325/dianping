@@ -7,8 +7,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -33,9 +31,8 @@ public class Order {
     @Column(nullable = false)
     private Double originalPrice;
 
-    @OneToOne
-    @JoinColumn(name = "best_coupon_id")  // 明确指定关联字段名
-    private Coupon bestCoupon;
+    @Column(name = "best_coupon_id")  // 明确指定关联字段名
+    private Long bestCouponId;
 
     @Column(nullable = false)
     private Double finalPrice;
@@ -63,8 +60,9 @@ public class Order {
     public void setOriginalPrice(Double originalPrice) {
         this.originalPrice = originalPrice;
     }
-    public void setBestCoupon(Coupon bestCoupon) {
-        this.bestCoupon = bestCoupon;
+
+    public void setBestCoupon(Long bestCoupon) {
+        this.bestCouponId = bestCoupon;
     }
     public void setFinalPrice(Double finalPrice) {
         this.finalPrice = finalPrice;

@@ -15,6 +15,7 @@ import org.com.dianping.repository.CouponRepository;
 import org.com.dianping.repository.MerchantRepository;
 import org.com.dianping.repository.OrderRepository;
 import org.com.dianping.repository.PackageGroupRepository;
+import org.com.dianping.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;   
@@ -25,14 +26,15 @@ public class OrderService {
     private final PackageGroupRepository packageGroupRepository;
     private final CouponRepository couponRepository;
     private final MerchantRepository merchantRepository;
-
+    private final UserRepository userRepository;
     public OrderService(OrderRepository orderRepository,
                         PackageGroupRepository packageGroupRepository,
-                        CouponRepository couponRepository, MerchantRepository merchantRepository) {
+                        CouponRepository couponRepository, MerchantRepository merchantRepository, UserRepository userRepository) {
         this.orderRepository = orderRepository;
         this.packageGroupRepository = packageGroupRepository;
         this.couponRepository = couponRepository;
         this.merchantRepository = merchantRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional
@@ -83,7 +85,8 @@ public class OrderService {
 
         // 如果使用了优惠券，需要标记优惠券为已使用
         if (couponUsing.coupon != null) {
-            // 这里可以添加标记优惠券使用状态的逻辑
+           CouponService couponService = new CouponService(couponRepository, userRepository);
+           couponService.useCoupon(couponUsing.coupon.getId()); // 调用 CouponService 中的方法来标记优惠券为已使用
         }
 
         return savedOrder;

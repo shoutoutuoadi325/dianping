@@ -143,7 +143,7 @@ public class OrderService {
     
     public Double computeDiscont(Double originalPrice, Coupon coupon) {
         // 检查是否满足最低消费要求
-        if (coupon.getMiniAmount() != null && originalPrice < coupon.getMiniAmount()) {
+        if (coupon.getMinAmount() != null && originalPrice < coupon.getMinAmount()) {
             return 0.0;
         }
 
@@ -151,7 +151,7 @@ public class OrderService {
         switch (coupon.getType()) {
             case "满减":
                 // 满减券必须满足最低消费金额
-                if (originalPrice >= coupon.getMiniAmount()) {
+                if (originalPrice >= coupon.getMinAmount()) {
                     discount = coupon.getValue();
                 }
                 break;

@@ -169,7 +169,7 @@ export default {
     }
   },
   computed: {
-    // 添加新的计算属性：实际可用的优惠券列表
+    // 添加新的计算属性：实际可用的优惠券列表 
     usableCoupons() {
       return this.availableCoupons.filter(this.isCouponUsable);
     },

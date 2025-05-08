@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.com.dianping.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
-
 public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByUserIdOrderByCreateTimeDesc(Long userId);
 

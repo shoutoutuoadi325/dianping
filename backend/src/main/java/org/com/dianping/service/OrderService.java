@@ -164,8 +164,11 @@ public class OrderService {
             case "立减":
                 discount = Math.min(coupon.getValue(), originalPrice);
                 break;
+            case "秒杀":
+                discount =  Math.min(20.0,(originalPrice-0.1));
+                break;
             case "免单":
-                discount = originalPrice;
+                discount =  Math.min(20.0,(originalPrice));
                 break;
             default:
                 throw new IllegalArgumentException("无效的优惠券类型");

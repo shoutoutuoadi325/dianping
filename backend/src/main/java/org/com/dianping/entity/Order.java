@@ -60,10 +60,11 @@ public class Order {
     public void setOriginalPrice(Double originalPrice) {
         this.originalPrice = originalPrice;
     }
-
+    
     public void setBestCoupon(Long bestCoupon) {
         this.bestCouponId = bestCoupon;
     }
+
     public void setFinalPrice(Double finalPrice) {
         this.finalPrice = finalPrice;
     }
@@ -92,6 +93,7 @@ public class Order {
         return voucherCode;
    }
    public Double getFinalPrice() {
-        return finalPrice;
+       if(finalPrice == null) return null;
+       return Math.floor(finalPrice * 100) / 100;
    }
 }

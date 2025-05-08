@@ -283,9 +283,12 @@ export default {
           break;
         
         case '免单': // 免单券
-          discountAmount = packagePrice; // 免单券直接减去全部价格
+          discountAmount = Math.min(packagePrice, 20); // 免单券直接减去全部价格
           break;
 
+        case '秒杀':
+          discountAmount = Math.min(packagePrice-0.1, 20); // 秒杀券直接减去全部价格
+          break;
         default:
           discountAmount = 0;
       }

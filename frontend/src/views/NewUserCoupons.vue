@@ -67,7 +67,28 @@ export default {
       return;
     }
     this.userInfo = JSON.parse(storedUserInfo);
-    this.loading = false;
+
+    // Check if the user already has any of the four specific coupons
+    axios.get('/api/coupons/all', {
+      headers: {
+        'UserId': this.userInfo.id
+      }
+    }).then(response => {
+      const userCoupons = response.data;
+      const hasSpecificCoupons = userCoupons.some(coupon =>
+        ['满100减38元(火锅专用券)', '满9元8折券(奶茶专用券)', '咖啡畅喝免单券', '通用立减10元券'].includes(coupon.couponName)
+      );
+      if (hasSpecificCoupons) {
+        alert('您已领取新人优惠券，无法再次访问此页面。');
+        this.$router.push('/my');
+      } else {
+        this.loading = false;
+      }
+    }).catch(error => {
+      console.error('获取用户优惠券失败:', error);
+      alert('加载失败，请稍后重试');
+      this.$router.push('/my');
+    });
   },
   methods: {
     async selectCoupon(choice) {

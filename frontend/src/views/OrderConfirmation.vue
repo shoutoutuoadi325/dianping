@@ -355,30 +355,10 @@ export default {
       return description.join(' | ');
     },
     formatValidity(coupon) {
-      if (coupon.endDate) {
-        const endDate = new Date(coupon.endDate);
-        // 判断是否当天过期
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const expiryDay = new Date(endDate);
-        expiryDay.setHours(0, 0, 0, 0);
-
-        if (expiryDay.getTime() === today.getTime()) {
-           return `今天 ${endDate.getHours()}:${endDate.getMinutes().toString().padStart(2, '0')} 到期`;
-        } else {
-           return `有效期至: ${endDate.toLocaleDateString()}`;
-        }
-      } else if (coupon.validDays && coupon.claimTime) {
-         const expiryDate = new Date(coupon.claimTime);
-         expiryDate.setDate(expiryDate.getDate() + coupon.validDays);
-         return `有效期至: ${expiryDate.toLocaleDateString()}`;
-      } else if (coupon.validDays) {
-         // 兼容 mock 中可能没有 claimTime 的情况
-         return `领取后${coupon.validDays}天内有效`;
+      if (coupon.expireTime) {
+        return new Date(coupon.expireTime).toLocaleDateString();
       }
-      else {
-        return '长期有效';
-      }
+      return '长期有效';
     },
     getCouponClass(coupon) {
       switch (coupon.type) {

@@ -52,10 +52,10 @@ export default {
     return {
       loading: true,
       availableCoupons: [
-        { choice: 'A', name: '火锅满减', description: '满100减38元(火锅专用券)' },
-        { choice: 'B', name: '奶茶折扣', description: '满9元8折券(奶茶专用券)' },
-        { choice: 'C', name: '咖啡免单', description: '咖啡畅喝免单券' },
-        { choice: 'D', name: '通用立减', description: '通用立减10元券' }
+        { choice: 'A', name: '火锅满减', description: '满100减38元(火锅专用券),领取后7天可用' },
+        { choice: 'B', name: '奶茶折扣', description: '满9元8折券(奶茶专用券),领取后7天可用' },
+        { choice: 'C', name: '奶茶免单', description: '奶茶畅喝免单券,领取后1天可用' },
+        { choice: 'D', name: '通用立减', description: '通用立减10元券,长期可用' }
       ],
       userInfo: null
     };

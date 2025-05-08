@@ -180,9 +180,9 @@ export default {
     },
     // 计算最终支付价格
     finalPrice() {
-      // 确保最终价格不小于0.01元（或0，根据业务）
+      // 确保最终价格不小于0元
       const price = this.packageData.price - this.discount;
-      return Math.max(price, 0.01);
+      return Math.max(price, 0);
     }
   },
   async created() { // 使用 created 代替 mounted，确保数据在模板渲染前获取
@@ -279,6 +279,10 @@ export default {
           discountAmount = coupon.maxDiscount > 0
             ? Math.min(potentialDiscountPercent, coupon.maxDiscount)
             : potentialDiscountPercent;
+          break;
+        
+        case '免单': // 免单券
+          discountAmount = packagePrice; // 免单券直接减去全部价格
           break;
 
         default:

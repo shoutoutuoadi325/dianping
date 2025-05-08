@@ -2,6 +2,7 @@ package org.com.dianping.service;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 import org.com.dianping.entity.Coupon;
 import org.com.dianping.entity.User;
@@ -55,6 +56,7 @@ public class CouponService {
                 coupon_init.setMiniAmount(100.0);
                 coupon_init.setValue(38.0);
                 coupon_init.setCouponName("满100减38元(火锅专用券)");
+                coupon_init.setExpireTime(LocalDateTime.now().plusDays(7));
                 break;
             case 'B':
                 coupon_init.setType("折扣");
@@ -62,13 +64,15 @@ public class CouponService {
                 coupon_init.setMiniAmount(9.0);
                 coupon_init.setValue(8.0);
                 coupon_init.setCouponName("满9元8折券(奶茶专用券)");
+                coupon_init.setExpireTime(LocalDateTime.now().plusDays(7));
                 break;
             case 'C':
                 coupon_init.setType("免单");
-                coupon_init.setCategory("咖啡");
+                coupon_init.setCategory("奶茶");
                 coupon_init.setMiniAmount(0.0);
                 coupon_init.setValue(0.0);
-                coupon_init.setCouponName("咖啡畅喝免单券");
+                coupon_init.setCouponName("奶茶畅喝免单券");
+                coupon_init.setExpireTime(LocalDateTime.now().plusDays(1));
                 break; 
             case 'D':
                 coupon_init.setType("立减");

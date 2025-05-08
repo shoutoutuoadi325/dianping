@@ -448,9 +448,24 @@ export default {
         return false;
       }
       // 检查满减门槛
-      if (coupon.minAmount && this.packageData.price < coupon.minAmount) {
+      if (this.packageData.price < coupon.minAmount) {
         return false;
       }
+
+      // 是否使用
+      if (coupon.couponAmount == 0) {
+      return false;
+      }
+
+      // 检查过期时间
+      if (coupon.expireTime) {
+        const now = new Date();
+        const expireTime = new Date(coupon.expireTime);
+        if (expireTime < now) {
+          return false; // 优惠券已过期
+        }
+      }
+
       return true;
     },
     // 添加新方法：获取优惠券不可用原因
@@ -460,6 +475,16 @@ export default {
       }
       if (coupon.minAmount && this.packageData.price < coupon.minAmount) {
         return `未满${coupon.minAmount}元`;
+      }
+      if (coupon.couponAmount == 0) {
+        return '优惠券已使用';
+      }
+      if (coupon.expireTime) {
+        const now = new Date();
+        const expireTime = new Date(coupon.expireTime);
+        if (expireTime < now) {
+          return '优惠券已过期';
+        }
       }
       return '';
     },

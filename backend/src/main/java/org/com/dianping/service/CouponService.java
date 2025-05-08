@@ -1,8 +1,8 @@
 package org.com.dianping.service;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.time.LocalDateTime;
 
 import org.com.dianping.entity.Coupon;
 import org.com.dianping.entity.User;
@@ -64,14 +64,14 @@ public class CouponService {
                 coupon_init.setValue(8.0);
                 coupon_init.setCouponName("满9元8折券(喜茶专用券)");
                 coupon_init.setExpireTime(LocalDateTime.now().plusDays(7));
-                coupon_init.setShopId(32L);
+                coupon_init.setShopId(59L);
                 break;
             case 'C':
-                coupon_init.setType("免单");
+                coupon_init.setType("秒杀");
                 coupon_init.setCategory("奶茶");
                 coupon_init.setMiniAmount(0.0);
                 coupon_init.setValue(0.0);
-                coupon_init.setCouponName("奶茶畅喝免单券");
+                coupon_init.setCouponName("奶茶畅喝秒杀券");
                 coupon_init.setExpireTime(LocalDateTime.now().plusDays(1));
                 break; 
             case 'D':

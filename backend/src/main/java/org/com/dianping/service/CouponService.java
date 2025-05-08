@@ -60,11 +60,11 @@ public class CouponService {
                 break;
             case 'B':
                 coupon_init.setType("折扣");
-                coupon_init.setCategory("奶茶");
                 coupon_init.setMiniAmount(9.0);
                 coupon_init.setValue(8.0);
-                coupon_init.setCouponName("满9元8折券(奶茶专用券)");
+                coupon_init.setCouponName("满9元8折券(喜茶专用券)");
                 coupon_init.setExpireTime(LocalDateTime.now().plusDays(7));
+                coupon_init.setShopId(32L);
                 break;
             case 'C':
                 coupon_init.setType("免单");

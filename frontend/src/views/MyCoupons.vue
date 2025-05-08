@@ -53,7 +53,8 @@
             <div class="coupon-info">
               <div class="coupon-title">{{ coupon.couponName }}</div>
               <div class="coupon-desc">
-                <span>品类: {{ coupon.category || '全商家通用' }}</span>
+                <span v-if="coupon.shopId">可用商家: {{ coupon.shopId }}</span>
+                <span v-else>品类: {{ getCategoryDisplay(coupon) }}</span>
                 <span v-if="coupon.expireTime"> | 有效期至: {{ formatValidity(coupon) }}</span>
                 <span v-else> | 长期有效</span>
               </div>
@@ -155,6 +156,13 @@ export default {
       }
       return '长期有效';
     },
+    getCategoryDisplay(coupon) {
+    if (coupon.category) {
+      return coupon.category;
+    }  
+    return '全商家通用';
+    },
+
     getCouponClass(coupon) {
       if (coupon.status !== 'unused') {
         return coupon.status;

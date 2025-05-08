@@ -137,6 +137,7 @@
 
 <script>
 import axios from 'axios';
+import { NULL } from 'sass';
 
 export default {
   data() {
@@ -443,10 +444,16 @@ export default {
     },
     // 添加新方法：检查优惠券是否可用
     isCouponUsable(coupon) {
-      // 检查品类匹配
-      if (coupon.category && coupon.category !== this.merchantData.category) {
-        return false;
+      // 检查商家匹配
+      if (coupon.category == null && coupon.shopId && coupon.shopId !== this.merchantData.id) {
+          return false; // 优惠券仅限特定商家使用
       }
+
+      // 检查品类匹配
+      if (coupon.category && coupon.category !== this.merchantData.category) {  
+          return false; // 优惠券仅限特定品类商家使用
+      }
+      
       // 检查满减门槛
       if (this.packageData.price < coupon.minAmount) {
         return false;
@@ -470,6 +477,9 @@ export default {
     },
     // 添加新方法：获取优惠券不可用原因
     getUnusableReason(coupon) {
+      if (coupon.category == null && coupon.shopId && coupon.shopId !== this.merchantData.id) {
+        return `仅限${coupon.shopId}商家使用`;
+      }
       if (coupon.category && coupon.category !== this.merchantData.category) {
         return `仅限${coupon.category}商家使用`;
       }

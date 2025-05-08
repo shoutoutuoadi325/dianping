@@ -73,7 +73,7 @@ public class OrderService {
             order.setBestCoupon(null);
         }
 
-        order.setFinalPrice(Math.max(pkg.getPrice() - couponUsing.Discount, 0.01));
+        order.setFinalPrice(Math.max(pkg.getPrice() - couponUsing.Discount, 0));
         order.setVoucherCode(generateVoucherCode());
         order.setStatus("未使用");
 

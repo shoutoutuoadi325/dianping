@@ -137,6 +137,7 @@
 
 <script>
 import axios from 'axios';
+import { NULL } from 'sass';
 
 export default {
   data() {
@@ -180,9 +181,9 @@ export default {
     },
     // 计算最终支付价格
     finalPrice() {
-      // 确保最终价格不小于0.01元（或0，根据业务）
+      // 确保最终价格不小于0元
       const price = this.packageData.price - this.discount;
-      return Math.max(price, 0.01);
+      return Math.max(price, 0);
     }
   },
   async created() { // 使用 created 代替 mounted，确保数据在模板渲染前获取
@@ -280,6 +281,10 @@ export default {
             ? Math.min(potentialDiscountPercent, coupon.maxDiscount)
             : potentialDiscountPercent;
           break;
+        
+        case '免单': // 免单券
+          discountAmount = packagePrice; // 免单券直接减去全部价格
+          break;
 
         default:
           discountAmount = 0;
@@ -350,30 +355,10 @@ export default {
       return description.join(' | ');
     },
     formatValidity(coupon) {
-      if (coupon.endDate) {
-        const endDate = new Date(coupon.endDate);
-        // 判断是否当天过期
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const expiryDay = new Date(endDate);
-        expiryDay.setHours(0, 0, 0, 0);
-
-        if (expiryDay.getTime() === today.getTime()) {
-           return `今天 ${endDate.getHours()}:${endDate.getMinutes().toString().padStart(2, '0')} 到期`;
-        } else {
-           return `有效期至: ${endDate.toLocaleDateString()}`;
-        }
-      } else if (coupon.validDays && coupon.claimTime) {
-         const expiryDate = new Date(coupon.claimTime);
-         expiryDate.setDate(expiryDate.getDate() + coupon.validDays);
-         return `有效期至: ${expiryDate.toLocaleDateString()}`;
-      } else if (coupon.validDays) {
-         // 兼容 mock 中可能没有 claimTime 的情况
-         return `领取后${coupon.validDays}天内有效`;
+      if (coupon.expireTime) {
+        return new Date(coupon.expireTime).toLocaleDateString();
       }
-      else {
-        return '长期有效';
-      }
+      return '长期有效';
     },
     getCouponClass(coupon) {
       switch (coupon.type) {
@@ -439,23 +424,57 @@ export default {
     },
     // 添加新方法：检查优惠券是否可用
     isCouponUsable(coupon) {
+      // 检查商家匹配
+      if (coupon.category == null && coupon.shopId && coupon.shopId !== this.merchantData.id) {
+          return false; // 优惠券仅限特定商家使用
+      }
+
       // 检查品类匹配
-      if (coupon.category && coupon.category !== this.merchantData.category) {
-        return false;
+      if (coupon.category && coupon.category !== this.merchantData.category) {  
+          return false; // 优惠券仅限特定品类商家使用
       }
+      
       // 检查满减门槛
-      if (coupon.minAmount && this.packageData.price < coupon.minAmount) {
+      if (this.packageData.price < coupon.minAmount) {
         return false;
       }
+
+      // 是否使用
+      if (coupon.couponAmount == 0) {
+      return false;
+      }
+
+      // 检查过期时间
+      if (coupon.expireTime) {
+        const now = new Date();
+        const expireTime = new Date(coupon.expireTime);
+        if (expireTime < now) {
+          return false; // 优惠券已过期
+        }
+      }
+
       return true;
     },
     // 添加新方法：获取优惠券不可用原因
     getUnusableReason(coupon) {
+      if (coupon.category == null && coupon.shopId && coupon.shopId !== this.merchantData.id) {
+        return `仅限${coupon.shopId}商家使用`;
+      }
       if (coupon.category && coupon.category !== this.merchantData.category) {
         return `仅限${coupon.category}商家使用`;
       }
       if (coupon.minAmount && this.packageData.price < coupon.minAmount) {
         return `未满${coupon.minAmount}元`;
+      }
+      if (coupon.couponAmount == 0) {
+        return '优惠券已使用';
+      }
+      if (coupon.expireTime) {
+        const now = new Date();
+        const expireTime = new Date(coupon.expireTime);
+        if (expireTime < now) {
+          return '优惠券已过期';
+        }
       }
       return '';
     },

@@ -13,6 +13,7 @@ import CouponCode from '@/views/CouponCode.vue'
 import MyOrders from '@/views/MyOrders.vue'
 import MyCoupons from '@/views/MyCoupons.vue'
 import NewUserCoupons from '@/views/NewUserCoupons.vue'
+import axios from 'axios';
 
 const routes = [
     {
@@ -103,13 +104,33 @@ const router = createRouter({
 })
 
 // 路由守卫，检查登录状态
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
     const isAuthenticated = !!localStorage.getItem('userInfo'); // 判断用户是否已登录
+
     if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
         next('/auth'); // 未登录时跳转到 AuthPage
-    } else {
-        next(); // 其他情况正常跳转
+    } else if (to.name === 'NewUserCoupons') {
+        try {
+            const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+            const userId = userInfo?.id;
+
+            if (userId) {
+                const response = await axios.get('/api/orders/user', {
+                    headers: { UserId: userId }
+                });
+
+                if (response.data && response.data.length > 0) {
+                    alert('您已下过订单，无法访问新人优惠页面。');
+                    next(false); // 阻止导航
+                    return;
+                }
+            }
+        } catch (error) {
+            console.error('检查用户订单时出错:', error);
+        }
     }
+
+    next(); // 其他情况正常跳转
 });
 
 export default router

@@ -108,7 +108,7 @@ public class Coupon {
     public void setValue(Double value) {
         this.value = value;
     }
-    public Double getMiniAmount() {
+    public Double getMinAmount() {
         return minAmount;
     }
     public void setMiniAmount(Double miniAmount) {

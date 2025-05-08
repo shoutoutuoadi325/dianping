@@ -181,6 +181,8 @@ export default {
           return `￥${coupon.value}`;
         case '折扣':
           return `${coupon.value}折`;
+        case '免单':
+          return '免单';
         default:
           // 如果没有类型或值，则显示名称
           return coupon.value ? `￥${coupon.value}` : coupon.couponName;

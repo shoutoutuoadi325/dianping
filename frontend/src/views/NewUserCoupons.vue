@@ -35,6 +35,7 @@
           <button
             class="claim-btn"
             @click="selectCoupon(coupon.choice)"
+            :disabled="hasSelected"
           >
             选择
           </button>
@@ -57,7 +58,8 @@ export default {
         { choice: 'C', name: '奶茶免单', description: '奶茶畅喝免单券,领取后1天可用' },
         { choice: 'D', name: '通用立减', description: '通用立减10元券,长期可用' }
       ],
-      userInfo: null
+      userInfo: null,
+      hasSelected: false
     };
   },
   mounted() {
@@ -93,6 +95,7 @@ export default {
   methods: {
     async selectCoupon(choice) {
       try {
+        this.hasSelected = true;
         await axios.post('/api/coupons/issue-by-choice', null, {
           headers: {
             'UserId': this.userInfo.id
@@ -370,9 +373,7 @@ export default {
   transition: all 0.3s ease;
   color: white;
 }
-.coupon-card.fixed-amount .claim-btn:not(:disabled) { background: #4a90e2; }
-.coupon-card.fix-to-amount .claim-btn:not(:disabled) { background: #e53935; }
-.coupon-card.percentage .claim-btn:not(:disabled) { background: #ff9800; }
+.coupon-card .claim-btn:not(:disabled) { background: #4a90e2; }
 
 .claim-btn:disabled {
   background: #ddd !important;

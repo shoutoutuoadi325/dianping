@@ -165,6 +165,12 @@ export default {
       try {
         const response = await axios.get(`/api/packages/business/${businessId}`);
         this.packages = response.data;
+        this.packages.forEach(pkg => {
+          if (pkg.imageUrl && !pkg.imageUrl.startsWith('http')) {
+            pkg.imageUrl = `http://localhost:8080${pkg.imageUrl}`;
+          }
+        });
+
       } catch (error) {
         console.error('获取套餐列表失败:', error);
         this.packages = [];

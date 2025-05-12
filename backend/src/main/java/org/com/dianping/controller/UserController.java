@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.Map;
 
+/**
+ * Controller for managing user-related operations such as registration and username checks.
+ */
 @CrossOrigin(origins = "http://localhost:8081", allowCredentials = "true")
 @RestController
 @RequestMapping("/users")
@@ -15,16 +18,35 @@ public class UserController {
 
     private final UserService userService;
 
+    /**
+     * Constructs a new {@link UserController}.
+     *
+     * @param userService the user service
+     */
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
+    /**
+     * Checks if a username is already taken.
+     *
+     * @param username the username to check
+     * @return a map indicating whether the username exists
+     */
     @GetMapping("/check-username")
     public Map<String, Boolean> checkUsernameAvailability(@RequestParam String username) {
         boolean exists = userService.usernameExists(username);
         return Collections.singletonMap("exists", exists);
     }
 
+    /**
+     * Registers a new user after validating the input.
+     *
+     * @param request the new user request containing username, password, and captcha
+     * @param session the HTTP session to retrieve the captcha code
+     * @return the registered user's response
+     * @throws RuntimeException if validation fails
+     */
     @PostMapping
     public UserResponse registerUser(@RequestBody NewUserRequest request, HttpSession session) {
         String sessionCaptcha = (String) session.getAttribute("CAPTCHA_CODE");

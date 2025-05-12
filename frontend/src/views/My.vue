@@ -87,7 +87,7 @@ export default {
   methods: {
     handleLogout() {
       localStorage.removeItem('userInfo')
-      this.$router.push('/login')
+      this.$router.push('/auth')
     },
     goToUserInfo() {
       this.$router.push('/user-info')

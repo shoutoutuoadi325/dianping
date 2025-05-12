@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+<<<<<<< HEAD
+=======
 
     /**
      * Handles {@link RuntimeException} and returns a structured error response.
@@ -16,11 +18,15 @@ public class GlobalExceptionHandler {
      * @param e the runtime exception
      * @return a {@link ResponseEntity} containing the error message
      */
+>>>>>>> origin/master
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<?> handleRuntimeException(RuntimeException e) {
         return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
     }
 
+<<<<<<< HEAD
+    record ErrorResponse(String message) {}
+=======
     /**
      * A record to encapsulate error response details.
      *
@@ -28,4 +34,5 @@ public class GlobalExceptionHandler {
      */
     record ErrorResponse(String message) {
     }
+>>>>>>> origin/master
 }

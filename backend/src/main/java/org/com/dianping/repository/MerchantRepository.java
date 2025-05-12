@@ -27,4 +27,5 @@ public interface MerchantRepository extends JpaRepository<Merchant, Long>, JpaSp
            "OR LOWER(m.merchantNamePinyin) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
            "OR LOWER(m.merchantNamePinyin) LIKE LOWER(CONCAT('%', REPLACE(:keyword, ' ', '')))")
     List<Merchant> findByKeyword(@Param("keyword") String keyword);
+
 }

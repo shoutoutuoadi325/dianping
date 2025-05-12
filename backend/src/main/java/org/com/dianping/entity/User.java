@@ -6,7 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
 /**
  * 用户实体类
  * <p>
@@ -16,7 +15,7 @@ import jakarta.persistence.Table;
  * @author Software Engineering Group
  */
 @Entity
-@Table(name = "User")
+@Table(name = "user")
 public class User {
     /**
      * 用户ID
@@ -83,7 +82,34 @@ public class User {
      * 初始化一个空的用户对象
      * </p>
      */
+    /**
+     * 用户下单次数
+     * <p>
+     * 记录用户已完成订单的总数
+     * </p>
+     */
+    @Column(name = "order_count", nullable = false)
+    private Integer orderCount = 0;
+
+    // 在默认构造器中初始化orderCount
     public User() {
+        this.orderCount = 0;
+    }
+
+    /**
+     * 获取下单次数
+     * @return 下单次数
+     */
+    public Integer getOrderCount() {
+        return orderCount;
+    }
+
+    /**
+     * 设置下单次数
+     * @param orderCount 新的下单次数
+     */
+    public void setOrderCount(Integer orderCount) {
+        this.orderCount = orderCount;
     }
 
     /**

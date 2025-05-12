@@ -49,6 +49,34 @@
         </div>
       </div>
 
+      <!-- 团购套餐列表 -->
+      <div class="packages-section">
+        <h3><i class="fas fa-tag"></i> 团购套餐</h3>
+        <div v-if="packages.length === 0" class="no-packages">
+          暂无可用团购套餐
+        </div>
+        <div v-else class="packages-list">
+          <div 
+            v-for="pkg in packages" 
+            :key="pkg.id" 
+            class="package-item"
+            @click="goToPackageDetail(pkg.id)"
+          >
+            <div class="package-image">
+              <img :src="pkg.imageUrl" :alt="pkg.title">
+            </div>
+            <div class="package-info">
+              <h4>{{ pkg.title }}</h4>
+              <div class="package-price">
+                <span class="current-price">￥{{ pkg.price }}</span>
+                <span class="original-price" v-if="pkg.originalPrice">￥{{ pkg.originalPrice }}</span>
+              </div>
+              <div class="package-sales">已售 {{ pkg.sales }} 份</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="description-section">
         <h3><i class="fas fa-store"></i> 商家特色</h3>
         <p>{{ business.description }}</p>
@@ -86,7 +114,8 @@ export default {
         description: '',
         coverUrl: '',
         photoUrls: [],
-      }
+      },
+      packages: []
     }
   },
   computed: {
@@ -115,6 +144,9 @@ export default {
       const id = this.$route.params.id;
       const response = await axios.get(`/api/businesses/${id}`);
       this.business = response.data;
+      
+      // 获取该商户的套餐列表
+      this.fetchPackages(id);
     } catch (error) {
       console.error('加载商家详情失败:', error);
     }
@@ -128,6 +160,24 @@ export default {
     showFullImage(photo) {
       // Logic to show full image in a modal or new view
       console.log('Show full image:', photo);
+    },
+    async fetchPackages(businessId) {
+      try {
+        const response = await axios.get(`/api/packages/business/${businessId}`);
+        this.packages = response.data;
+        this.packages.forEach(pkg => {
+          if (pkg.imageUrl && !pkg.imageUrl.startsWith('http')) {
+            pkg.imageUrl = `http://localhost:8080${pkg.imageUrl}`;
+          }
+        });
+
+      } catch (error) {
+        console.error('获取套餐列表失败:', error);
+        this.packages = [];
+      }
+    },
+    goToPackageDetail(packageId) {
+      this.$router.push(`/package/${packageId}`);
     }
   }
 }
@@ -245,7 +295,7 @@ export default {
   color: #333;
 }
 
-.description-section, .gallery-section {
+.description-section, .gallery-section, .packages-section {
   background: white;
   border-radius: 15px;
   padding: 25px;
@@ -253,7 +303,7 @@ export default {
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
-.description-section h3 {
+.description-section h3, .gallery-section h3, .packages-section h3 {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -293,7 +343,99 @@ export default {
   object-fit: cover;
 }
 
-.gallery-section h3 {
-  font-size: 1.6rem;  /* 增大相册标题 */
+/* 套餐样式 */
+.packages-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.package-item {
+  display: flex;
+  background: #f8f9fa;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.package-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.package-image {
+  width: 120px;
+  height: 120px;
+  overflow: hidden;
+}
+
+.package-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.package-info {
+  flex: 1;
+  padding: 15px;
+  position: relative;
+}
+
+.package-info h4 {
+  margin: 0 0 10px 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.package-price {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.current-price {
+  color: #e53935;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.original-price {
+  color: #999;
+  font-size: 0.9rem;
+  text-decoration: line-through;
+}
+
+.package-sales {
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.buy-btn {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  padding: 6px 12px;
+  background: #e53935;
+  color: white;
+  border: none;
+  border-radius: 15px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.buy-btn:hover {
+  background: #c62828;
+}
+
+.no-packages {
+  padding: 30px;
+  text-align: center;
+  color: #999;
+  font-size: 1.1rem;
 }
 </style>

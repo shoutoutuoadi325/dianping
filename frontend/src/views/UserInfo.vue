@@ -1,5 +1,9 @@
 <template>
   <div class="user-info-container">
+    <button class="back-btn" @click="$router.back()">
+      <i class="fas fa-arrow-left"></i>
+      返回
+    </button>
     <div class="user-card">
       <div class="user-header">
         <div class="avatar">
@@ -29,6 +33,7 @@
           <i class="fas fa-sign-out-alt"></i>
           退出登录
         </button>
+        <button class="my-coupons-btn" @click="goToMyCoupons">我的卡包</button>
       </div>
     </div>
   </div>
@@ -61,6 +66,9 @@ export default {
     },
     formatDate() {
       return new Date().toLocaleDateString()
+    },
+    goToMyCoupons() {
+      this.$router.push('/my-coupons');
     }
   }
 }
@@ -164,5 +172,44 @@ export default {
 
 .logout-btn:hover {
   background: #c82333;
+}
+
+.my-coupons-btn {
+  padding: 10px 20px;
+  background: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s;
+  margin-top: 10px;
+}
+
+.my-coupons-btn:hover {
+  background: #357abd;
+  transform: translateY(-2px);
+}
+
+.back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  padding: 12px 25px;
+  background: #666;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s;
+  z-index: 1000;
+}
+
+.back-btn:hover {
+  background: #555;
+  transform: scale(1.05);
 }
 </style>

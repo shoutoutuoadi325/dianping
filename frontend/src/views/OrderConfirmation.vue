@@ -326,6 +326,8 @@ export default {
           return `￥${this.calculateDiscount(coupon).toFixed(2)}`; // 直接显示优惠额
         case '折扣':
           return `${coupon.value}折`;
+        case '免单': // 新增免单券的显示逻辑
+          return '免单';
         default:
           return '';
       }
@@ -337,6 +339,8 @@ export default {
          case '满减': return 'fixed-amount-text';
          case '立减': return 'fix-to-amount-text';
          case '折扣': return 'percentage-text';
+         case '免单': return 'free-order-text'; // 新增免单券的样式类
+         case '秒杀': return 'flash-sale-text'; // 新增秒杀券的样式类
          default: return '';
        }
     },
@@ -371,6 +375,9 @@ export default {
           return 'fix-to-amount';
         case '折扣':
           return 'percentage';
+        case '免单': // 新增免单券的样式类
+          return 'free-order';
+        case '秒杀': return 'flash-sale'; // 新增秒杀券的样式类
         default:
           return '';
       }
@@ -638,6 +645,10 @@ export default {
 .fixed-amount-text { color: #4a90e2; }
 .fix-to-amount-text { color: #e53935; }
 .percentage-text { color: #ff9800; }
+.free-order-text { color: #4caf50; } /* 新增免单券的颜色 */
+.flash-sale-text {
+  color: #ff5722; /* 橙色表示秒杀券 */
+}
 
 
 .no-selected-coupon {
@@ -972,6 +983,11 @@ export default {
 .fixed-amount .coupon-left { background: #4a90e2; }
 .fix-to-amount .coupon-left { background: #e53935; }
 .percentage .coupon-left { background: #ff9800; }
+.free-order .coupon-left { background: #4caf50; } /* 新增免单券的样式 */
+.flash-sale .coupon-left {
+  background: #ff5722; /* 橙色背景 */
+}
+
 
 .coupon-option.disabled {
   opacity: 0.8;

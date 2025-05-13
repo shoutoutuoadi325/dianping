@@ -64,7 +64,7 @@ public class CouponService {
                 coupon_init.setValue(8.0);
                 coupon_init.setCouponName("满9元8折券(喜茶专用券)");
                 coupon_init.setExpireTime(LocalDateTime.now().plusDays(7));
-                coupon_init.setShopId(59L);
+                coupon_init.setShopId(32L);
                 break;
             case 'C':
                 coupon_init.setType("秒杀");

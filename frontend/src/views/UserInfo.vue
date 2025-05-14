@@ -56,13 +56,13 @@ export default {
       this.userInfo = JSON.parse(userData);
       this.user = JSON.parse(userData);
     } else {
-      this.$router.push('/login');
+      this.$router.push('/auth');
     }
   },
   methods: {
     handleLogout() {
       localStorage.removeItem('userInfo')
-      this.$router.push('/login')
+      this.$router.push('/auth')
     },
     formatDate() {
       return new Date().toLocaleDateString()

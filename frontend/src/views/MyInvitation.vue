@@ -82,7 +82,7 @@ export default {
           })
           .then(data => {
             this.invitationRecords = data;
-            this.totalCount = data.length;
+            this.totalCount = data.length ;
             this.remaining = (2 - (this.totalCount % 2));
           })
           .catch(err => console.error('获取邀请记录失败:', err));

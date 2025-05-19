@@ -20,16 +20,17 @@
       <h3>邀请记录</h3>
       <ul>
         <li v-for="record in invitationRecords" :key="record.id">
-          {{ record.inviteeName }} - {{ record.status }}
+          {{ record.inviteeName }} - 下单时间：{{ record.orderTime }} - 金额：¥{{ record.price }}
         </li>
       </ul>
     </div>
 
     <div class="reward-coupons">
       <h3>奖励券明细</h3>
+      <h4 >还差{{ remaining }}位，可领取奖励券</h4>
       <ul>
         <li v-for="coupon in rewardCoupons" :key="coupon.id">
-          {{ coupon.description }} - 有效期至 {{ coupon.expiryDate }}
+          {{ coupon.couponName }} - 有效期至 {{ coupon.expireTime }}
         </li>
       </ul>
     </div>
@@ -42,7 +43,9 @@ export default {
     return {
       userInfo: {},
       invitationRecords: [],
-      rewardCoupons: []
+      rewardCoupons: [],
+      totalCount: 0,
+      remaining: 0
     };
   },
   mounted() {
@@ -58,34 +61,45 @@ export default {
   methods: {
     copyCode() {
       navigator.clipboard.writeText(this.userInfo.invitationCode)
-        .then(() => alert('邀请码已复制到剪贴板'))
-        .catch(err => console.error('复制失败:', err));
+          .then(() => alert('邀请码已复制到剪贴板'))
+          .catch(err => console.error('复制失败:', err));
     },
     fetchInvitationRecords() {
       // Replace with actual API call
-      fetch('/api/invitation-records', {
+      fetch('http://localhost:8080/api/invitation-records', {
         headers: {
-          Authorization: `Bearer ${this.userInfo.token}`
+          Authorization: `Bearer ${this.userInfo.token}`,
+          'UserId': this.userInfo.id.toString()  // 添加 UserId 请求头
         }
       })
-        .then(response => response.json())
-        .then(data => {
-          this.invitationRecords = data;
-        })
-        .catch(err => console.error('获取邀请记录失败:', err));
+          .then(response => {
+            if (!response.ok) throw new Error(`HTTP错误! 状态码: ${response.status}`);
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+              throw new TypeError("响应不是JSON格式");
+            }
+            return response.json();
+          })
+          .then(data => {
+            this.invitationRecords = data;
+            this.totalCount = data.length ;
+            this.remaining = (2 - (this.totalCount % 2));
+          })
+          .catch(err => console.error('获取邀请记录失败:', err));
     },
     fetchRewardCoupons() {
       // Replace with actual API call
-      fetch('/api/reward-coupons', {
+      fetch('http://localhost:8080/api/reward-coupons', {
         headers: {
-          Authorization: `Bearer ${this.userInfo.token}`
+          Authorization: `Bearer ${this.userInfo.token}`,
+          'UserId': this.userInfo.id  // 添加 UserId 请求头
         }
       })
-        .then(response => response.json())
-        .then(data => {
-          this.rewardCoupons = data;
-        })
-        .catch(err => console.error('获取奖励券明细失败:', err));
+          .then(response => response.json())
+          .then(data => {
+            this.rewardCoupons = data;
+          })
+          .catch(err => console.error('获取奖励券明细失败:', err));
     }
   }
 };
@@ -169,6 +183,7 @@ h2 {
   gap: 8px;
   margin-bottom: 30px;
 }
+
 h3 {
   color: #666;
   margin-bottom: 15px;

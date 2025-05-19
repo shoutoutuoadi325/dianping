@@ -1,12 +1,21 @@
 package org.com.dianping.controller;
 
-import org.com.dianping.DTO.NewUserRequest;
-import org.com.dianping.DTO.UserResponse;
-import org.com.dianping.service.UserService;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.Map;
+
+import org.com.dianping.DTO.NewUserRequest;
+import org.com.dianping.DTO.UserResponse;
+import org.com.dianping.entity.User;
+import org.com.dianping.service.UserService;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Controller for managing user-related operations such as registration and username checks.
@@ -61,5 +70,27 @@ public class UserController {
         }
         session.removeAttribute("CAPTCHA_CODE");
         return userService.registerUser(request);
+    }
+
+    /**
+     * 验证邀请码
+     * @param invitationCode 邀请码
+     * @return 验证结果
+     */
+    @GetMapping("/validate-invitation")  // 确保路径匹配
+    public Map<String, Object> validateInvitationCode(@RequestParam String invitationCode) {
+        try {
+            User inviter = userService.validateInvitationCode(invitationCode);
+            return Map.of(
+                "valid", true,
+                "message", "邀请码有效",
+                "inviterUsername", inviter.getUsername()
+            );
+        } catch (RuntimeException e) {
+            return Map.of(
+                "valid", false,
+                "message", e.getMessage()
+            );
+        }
     }
 }

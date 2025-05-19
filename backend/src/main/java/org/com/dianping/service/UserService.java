@@ -110,4 +110,18 @@ public class UserService {
         }
         return new UserResponse(user);
     }
+
+    /**
+     * 验证邀请码
+     * @param invitationCode 邀请码
+     * @return 邀请人用户对象
+     * @throws RuntimeException 当邀请码无效时抛出
+     */
+    public User validateInvitationCode(String invitationCode) {
+        if (invitationCode == null || invitationCode.isEmpty()) {
+            throw new RuntimeException("邀请码不能为空");
+        }
+        return userRepository.findByInvitationCode(invitationCode)
+            .orElseThrow(() -> new RuntimeException("无效的邀请码"));
+    }
 }

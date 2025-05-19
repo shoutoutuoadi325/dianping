@@ -1,9 +1,10 @@
 package org.com.dianping.repository;
 
+import java.util.Optional;
+
 import org.com.dianping.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -15,4 +16,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // 添加检查邀请码是否存在的方法
     boolean existsByInvitationCode(String invitationCode);
+
+    Optional<User> findByInvitationCode(String invitationCode);
 }

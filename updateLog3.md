@@ -1,7 +1,14 @@
+# 日志：
+主要内容：
+
+- 后端：用户注册时生成唯一邀请码，存入用户表。
+- 前端：“我的邀请”页面，展示我的邀请码、邀请记录、奖励券明细。
+- 数据库：用户表增加邀请码字段。
+
 # 用户表结构调整说明
-新增字段invitation_code存储用户的邀请码
+- 新增字段invitation_code存储用户的邀请码
 # 邀请码生成逻辑
-· UserService.java
+- UserService.java
 ```
 private String generateInvitationCode() {
         // Generate 6 characters code with numbers and uppercase letters
@@ -25,7 +32,7 @@ private String generateInvitationCode() {
     }
 ```
 # 前端邀请码页面
-· MyInvitation.vue
+- MyInvitation.vue
 
 # 后端接口定义
 

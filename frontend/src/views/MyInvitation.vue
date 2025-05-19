@@ -14,20 +14,6 @@
         <i class="fas fa-copy"></i>
         复制邀请码
       </button>
-
-      <div class="share-section">
-        <h3>分享方式</h3>
-        <div class="share-buttons">
-          <button class="share-btn wechat">
-            <i class="fab fa-weixin"></i>
-            微信
-          </button>
-          <button class="share-btn qq">
-            <i class="fab fa-qq"></i>
-            QQ
-          </button>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -124,12 +110,6 @@ h2 {
   gap: 8px;
   margin-bottom: 30px;
 }
-
-.share-section {
-  border-top: 1px solid #eee;
-  padding-top: 20px;
-}
-
 h3 {
   color: #666;
   margin-bottom: 15px;

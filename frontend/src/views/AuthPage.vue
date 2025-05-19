@@ -128,8 +128,8 @@
       </form>
       <!-- 底部链接 -->
       <div class="footer-links">
-        <a href="https://coder-shx.github.io/Reversible-database-watermarking/">关于我们</a>
-        <a href="https://coder-shx.github.io/Reversible-database-watermarking/">联系我们</a>
+        <a href="https://dianping.com">关于我们</a>
+        <a href="https://dianping.com">联系我们</a>
         <a href="javascript:void(0)" @click="showText('微信号: ...，电话: ...')">用户帮助</a>
         <a href="javascript:void(0)" @click="showText('微信号: ...，电话: ...')">合作伙伴</a>
         <a href="javascript:void(0)" @click="showText('微信号: ...，电话: ...')">隐私政策</a>

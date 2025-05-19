@@ -66,8 +66,27 @@ public class UserService {
         }
         String encryptedPassword = PasswordUtil.encryptPassword(request.password());
         var user = new User(null, request.username(), encryptedPassword);
+
+        // Generate unique invitation code
+        String invitationCode;
+        do {
+            invitationCode = generateInvitationCode();
+        } while (userRepository.existsByInvitationCode(invitationCode));
+
+        user.setInvitationCode(invitationCode);
         user = userRepository.save(user);
         return new UserResponse(user);
+    }
+
+    private String generateInvitationCode() {
+        // Generate 6 characters code with numbers and uppercase letters
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 6; i++) {
+            int index = (int) (chars.length() * Math.random());
+            sb.append(chars.charAt(index));
+        }
+        return sb.toString();
     }
 
     /**

@@ -91,7 +91,10 @@ public class User {
     @Column(name = "order_count", nullable = false)
     private Integer orderCount = 0;
 
-    // 在默认构造器中初始化orderCount
+    @Column(name = "invitation_code", nullable = false, unique = true)
+    private String invitationCode;
+
+    // 在默认构造器中不初始化invitationCode
     public User() {
         this.orderCount = 0;
     }
@@ -155,5 +158,13 @@ public class User {
      */
     public void setEncryptedPassword(String encryptedPassword) {
         this.encryptedPassword = encryptedPassword;
+    }
+
+    public String getInvitationCode() {
+        return invitationCode;
+    }
+
+    public void setInvitationCode(String invitationCode) {
+        this.invitationCode = invitationCode;
     }
 }

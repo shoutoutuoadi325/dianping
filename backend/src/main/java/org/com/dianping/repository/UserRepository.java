@@ -12,4 +12,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // 根据用户名查找用户
     Optional<User> findByUsername(String username);
+
+    // 添加检查邀请码是否存在的方法
+    boolean existsByInvitationCode(String invitationCode);
 }

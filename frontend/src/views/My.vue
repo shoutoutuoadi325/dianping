@@ -21,6 +21,11 @@
         <i class="fas fa-ticket-alt"></i>
         <span>我的卡包</span>
       </div>
+
+      <div class="feature-card" @click="$router.push('/my-invitation')">
+        <i class="fas fa-user-plus"></i>
+        <span>我的邀请</span>
+      </div>
       
       <div v-if="!hasOrders" class="feature-card" @click="$router.push('/new-user-coupons')">
         <i class="fas fa-gift"></i>

@@ -93,6 +93,10 @@ public class Coupon {
         return expireTime;
     }
 
+    public void setMinAmount(Double minAmount) {
+        this.minAmount = minAmount;
+    }
+
     public void setExpireTime(LocalDateTime expireTime) {
         this.expireTime = expireTime;
     }

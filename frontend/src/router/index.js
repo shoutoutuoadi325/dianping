@@ -95,6 +95,12 @@ const routes = [
         name: 'NewUserCoupons',
         component: NewUserCoupons,
         meta: {requiresAuth: true}
+    },
+    {
+        path: '/my-invitation',
+        name: 'MyInvitation',
+        component: () => import('@/views/MyInvitation.vue'),
+        meta: { requiresAuth: true }
     }
 ]
 

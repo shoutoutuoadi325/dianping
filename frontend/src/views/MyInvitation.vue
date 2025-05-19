@@ -15,6 +15,24 @@
         复制邀请码
       </button>
     </div>
+
+    <div class="invitation-records">
+      <h3>邀请记录</h3>
+      <ul>
+        <li v-for="record in invitationRecords" :key="record.id">
+          {{ record.inviteeName }} - {{ record.status }}
+        </li>
+      </ul>
+    </div>
+
+    <div class="reward-coupons">
+      <h3>奖励券明细</h3>
+      <ul>
+        <li v-for="coupon in rewardCoupons" :key="coupon.id">
+          {{ coupon.description }} - 有效期至 {{ coupon.expiryDate }}
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
@@ -22,25 +40,55 @@
 export default {
   data() {
     return {
-      userInfo: {}
-    }
+      userInfo: {},
+      invitationRecords: [],
+      rewardCoupons: []
+    };
   },
   mounted() {
-    const userData = localStorage.getItem('userInfo')
+    const userData = localStorage.getItem('userInfo');
     if (userData) {
-      this.userInfo = JSON.parse(userData)
+      this.userInfo = JSON.parse(userData);
+      this.fetchInvitationRecords();
+      this.fetchRewardCoupons();
     } else {
-      this.$router.push('/auth')
+      this.$router.push('/auth');
     }
   },
   methods: {
     copyCode() {
       navigator.clipboard.writeText(this.userInfo.invitationCode)
         .then(() => alert('邀请码已复制到剪贴板'))
-        .catch(err => console.error('复制失败:', err))
+        .catch(err => console.error('复制失败:', err));
+    },
+    fetchInvitationRecords() {
+      // Replace with actual API call
+      fetch('/api/invitation-records', {
+        headers: {
+          Authorization: `Bearer ${this.userInfo.token}`
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          this.invitationRecords = data;
+        })
+        .catch(err => console.error('获取邀请记录失败:', err));
+    },
+    fetchRewardCoupons() {
+      // Replace with actual API call
+      fetch('/api/reward-coupons', {
+        headers: {
+          Authorization: `Bearer ${this.userInfo.token}`
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          this.rewardCoupons = data;
+        })
+        .catch(err => console.error('获取奖励券明细失败:', err));
     }
   }
-}
+};
 </script>
 
 <style scoped>
@@ -49,7 +97,7 @@ export default {
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   padding: 20px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
 }
 
@@ -60,6 +108,17 @@ export default {
   width: 100%;
   max-width: 500px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.invitation-records, .reward-coupons {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
 }
 
 .back-btn {
@@ -115,29 +174,17 @@ h3 {
   margin-bottom: 15px;
 }
 
-.share-buttons {
-  display: flex;
-  gap: 15px;
+ul {
+  list-style: none;
+  padding: 0;
 }
 
-.share-btn {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: white;
+li {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
 }
 
-.wechat {
-  background: #07c160;
-}
-
-.qq {
-  background: #12b7f5;
+li:last-child {
+  border-bottom: none;
 }
 </style>

@@ -67,7 +67,7 @@ public class UserService {
         String encryptedPassword = PasswordUtil.encryptPassword(request.password());
         var user = new User(null, request.username(), encryptedPassword);
 
-        // Generate unique invitation code
+        // 只生成邀请码，不处理邀请关系
         String invitationCode;
         do {
             invitationCode = generateInvitationCode();
@@ -110,4 +110,39 @@ public class UserService {
         }
         return new UserResponse(user);
     }
+
+    /**
+     * 验证邀请码
+     * @param invitationCode 邀请码
+     * @return 邀请人用户对象
+     * @throws RuntimeException 当邀请码无效时抛出
+     */
+    public User validateInvitationCode(String invitationCode) {
+        if (invitationCode == null || invitationCode.isEmpty()) {
+            throw new RuntimeException("邀请码不能为空");
+        }
+        return userRepository.findByInvitationCode(invitationCode)
+            .orElseThrow(() -> new RuntimeException("无效的邀请码"));
+    }
+
+    /**
+     * 验证邀请码并返回邀请人的用户名
+     * @param invitationCode 邀请码
+     * @return 包含验证结果和邀请人用户名的对象
+     */
+    public InvitationValidationResponse validateInvitationCodeForOrder(String invitationCode) {
+        try {
+            User inviter = validateInvitationCode(invitationCode);
+            return new InvitationValidationResponse(true, inviter.getUsername(), null);
+        } catch (RuntimeException e) {
+            return new InvitationValidationResponse(false, null, e.getMessage());
+        }
+    }
+
+    // 添加一个新的记录类来封装验证结果
+    public record InvitationValidationResponse(
+        boolean valid,
+        String inviterUsername,
+        String message
+    ) {}
 }

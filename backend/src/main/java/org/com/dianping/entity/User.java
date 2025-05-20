@@ -167,4 +167,13 @@ public class User {
     public void setInvitationCode(String invitationCode) {
         this.invitationCode = invitationCode;
     }
+
+    private Long inviterId;
+    public Long getInviterId() {
+        return inviterId;
+    }
+
+    public void setInviterId(Long inviterId) {
+        this.inviterId = inviterId;
+    }
 }

@@ -1,12 +1,21 @@
 package org.com.dianping.controller;
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.com.dianping.DTO.NewUserRequest;
 import org.com.dianping.DTO.UserResponse;
 import org.com.dianping.service.UserService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import jakarta.servlet.http.HttpSession;
-import org.springframework.web.bind.annotation.*;
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * Controller for managing user-related operations such as registration and username checks.
@@ -61,5 +70,24 @@ public class UserController {
         }
         session.removeAttribute("CAPTCHA_CODE");
         return userService.registerUser(request);
+    }
+
+ 
+    /**
+     * 处理订单的邀请码验证请求
+     * @param invitationCode 邀请码
+     * @return 验证结果
+     */
+    @GetMapping("/validate-invitation")
+    public ResponseEntity<?> validateInvitationCodeForOrder(@RequestParam String invitationCode) {
+        try {
+            var response = userService.validateInvitationCodeForOrder(invitationCode);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "valid", false,
+                "message", e.getMessage()
+            ));
+        }
     }
 }

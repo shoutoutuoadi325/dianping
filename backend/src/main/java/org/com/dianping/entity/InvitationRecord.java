@@ -1,8 +1,13 @@
 package org.com.dianping.entity;
 
-import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 @Entity
 @Table(name = "invitation_record")
 //查看自己的邀请记录：包括成功邀请的新用户列表、邀请成功订单的下单时间与实付金额。
@@ -22,6 +27,9 @@ public class InvitationRecord {
 
     @Column(nullable = false)
     private Double price;
+
+    @Column(nullable = false)
+    private String inviteeName;  // 添加被邀请人名称字段
 
     public InvitationRecord() {
         super();
@@ -55,5 +63,12 @@ public class InvitationRecord {
     }
     public void setPrice(Double price) {
         this.price = price;
+    }
+    public String getInviteeName() {
+        return inviteeName;
+    }
+
+    public void setInviteeName(String inviteeName) {
+        this.inviteeName = inviteeName;
     }
 }

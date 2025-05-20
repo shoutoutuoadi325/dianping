@@ -48,7 +48,8 @@ public class CouponService {
         coupon_init.setUserId(userId);
         coupon_init.setExpireTime(null);
         coupon_init.setShopId(null);
-        coupon_init.setCouponAmount(1);;
+        coupon_init.setCouponAmount(1);
+        coupon_init.setMaxAmount(9999999999999999.0);
         switch (choice) {
             case 'A':
                 coupon_init.setType("满减");
@@ -81,6 +82,15 @@ public class CouponService {
                 coupon_init.setValue(10.0);
                 coupon_init.setCouponName("通用立减10元券");
                 break; 
+            case 'E':
+                coupon_init.setType("折扣");
+                coupon_init.setCategory(null);
+                coupon_init.setMiniAmount(0.0);
+                coupon_init.setValue(8.0);
+                coupon_init.setCouponName("通用8折券,最高抵扣20元");
+                coupon_init.setExpireTime(LocalDateTime.now().plusDays(7));
+                coupon_init.setMaxAmount(20.0);
+                break;
             default:
                 throw new IllegalArgumentException("无效的选择类型");
         }

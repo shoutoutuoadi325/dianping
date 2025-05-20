@@ -2,7 +2,7 @@
   <div class="replies-container">
     <div v-for="reply in directReplies" :key="reply.id" class="reply-item">
       <div class="review-avatar">
-        <div class="avatar-circle">
+        <div class="avatar-circle" :style="{ backgroundColor: getUserColor(reply.userID) }">
           {{ getUserInitial(reply.userID) }}
         </div>
       </div>
@@ -98,6 +98,17 @@ export default {
         return this.users[userId].username.charAt(0).toUpperCase();
       }
       return 'U';
+    },
+    getUserColor(userId) {
+      // 预定义的颜色数组，柔和但有区分度的颜色
+      const colors = [
+        '#4A90E2', '#50C878', '#F5A623', '#E74C3C', '#9B59B6', 
+        '#3498DB', '#2ECC71', '#F1C40F', '#E67E22', '#8E44AD'
+      ];
+      
+      // 使用userId作为索引选择颜色
+      const colorIndex = (userId % colors.length);
+      return colors[colorIndex];
     }
   }
 }
@@ -138,7 +149,6 @@ export default {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #4a90e2;
   color: #fff;
   display: flex;
   justify-content: center;

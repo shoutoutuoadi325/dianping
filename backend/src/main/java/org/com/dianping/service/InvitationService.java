@@ -1,10 +1,16 @@
 package org.com.dianping.service;
 
-import org.com.dianping.entity.*;
-import org.com.dianping.repository.*;
+import java.time.LocalDateTime;
+
+import org.com.dianping.entity.Coupon;
+import org.com.dianping.entity.InvitationRecord;
+import org.com.dianping.entity.InvitationReward;
+import org.com.dianping.entity.User;
+import org.com.dianping.repository.InvitationRecordRepository;
+import org.com.dianping.repository.InvitationRewardRepository;
+import org.com.dianping.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDateTime;
 
 @Service
 public class InvitationService {
@@ -25,13 +31,24 @@ public class InvitationService {
 
     @Transactional
     public void processInvitationReward(Long inviterId, Long inviteeId, Double orderAmount) {
+        // 检查订单金额是否满足要求
+        if (orderAmount <= 10.0) {
+            return; // 订单金额不满足要求，不记录邀请
+        }
+
+        // 获取被邀请人信息
+        User invitee = userRepo.findById(inviteeId)
+                .orElseThrow(() -> new RuntimeException("被邀请用户不存在"));
+
         // 保存邀请记录
         InvitationRecord record = new InvitationRecord();
         record.setUserId(inviterId);
         record.setInviteeId(inviteeId);
+        record.setInviteeName(invitee.getUsername());
         record.setOrderTime(LocalDateTime.now());
         record.setPrice(orderAmount);
         recordRepo.save(record);
+
         // 检查奖励条件
         long totalValid = recordRepo.countByUserId(inviterId);
         if (totalValid % 2 == 0) {

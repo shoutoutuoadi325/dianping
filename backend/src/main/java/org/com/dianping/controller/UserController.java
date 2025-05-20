@@ -5,8 +5,8 @@ import java.util.Map;
 
 import org.com.dianping.DTO.NewUserRequest;
 import org.com.dianping.DTO.UserResponse;
-import org.com.dianping.entity.User;
 import org.com.dianping.service.UserService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -72,25 +72,22 @@ public class UserController {
         return userService.registerUser(request);
     }
 
+ 
     /**
-     * 验证邀请码
+     * 处理订单的邀请码验证请求
      * @param invitationCode 邀请码
      * @return 验证结果
      */
-    @GetMapping("/validate-invitation")  // 确保路径匹配
-    public Map<String, Object> validateInvitationCode(@RequestParam String invitationCode) {
+    @GetMapping("/validate-invitation")
+    public ResponseEntity<?> validateInvitationCodeForOrder(@RequestParam String invitationCode) {
         try {
-            User inviter = userService.validateInvitationCode(invitationCode);
-            return Map.of(
-                "valid", true,
-                "message", "邀请码有效",
-                "inviterUsername", inviter.getUsername()
-            );
-        } catch (RuntimeException e) {
-            return Map.of(
+            var response = userService.validateInvitationCodeForOrder(invitationCode);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
                 "valid", false,
                 "message", e.getMessage()
-            );
+            ));
         }
     }
 }

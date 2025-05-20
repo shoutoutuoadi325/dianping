@@ -62,6 +62,9 @@
           <span class="invitation-message" :class="{ error: invitationError }">
             {{ invitationMessage }}
           </span>
+          <span class="invitation-hint" v-if="finalPrice <= 10">
+            订单金额需大于10元才是有效邀请
+          </span>
         </div>
       </div>
 
@@ -421,9 +424,16 @@ export default {
         this.invitationValid = false;
         return;
       }
+
+      // 检查是否是自己的邀请码
+      if (this.invitationCode === this.userInfo.invitationCode) {
+        this.invitationMessage = '不能使用自己的邀请码';
+        this.invitationError = true;
+        this.invitationValid = false;
+        return;
+      }
       
       try {
-        // 修改请求路径，添加/api前缀
         const response = await axios.get('/users/validate-invitation', {
           params: {
             invitationCode: this.invitationCode
@@ -439,15 +449,32 @@ export default {
           this.invitationError = true;
           this.invitationValid = false;
         }
+
+        // 如果订单金额小于10元，添加提示信息
+        if (this.finalPrice <= 10 && this.invitationValid) {
+          this.invitationMessage += '';
+        }
       } catch (error) {
-        console.error('验证邀请码错误:', error);
-        this.invitationMessage = '验证邀请码失败';
+        this.invitationMessage = error.response?.data?.message || '验证邀请码失败';
         this.invitationError = true;
         this.invitationValid = false;
       }
     },
     async submitOrder() {
       if (this.submitting) return;
+      
+      // 修改邀请码相关验证
+      if (this.invitationCode) {
+        if (this.invitationCode === this.userInfo.invitationCode) {
+          this.$message.error('不能使用自己的邀请码');
+          return;
+        }
+        if (!this.invitationValid) {
+          this.$message.error('请输入有效的邀请码');
+          return;
+        }
+      }
+
       this.submitting = true;
 
       try {
@@ -1070,5 +1097,17 @@ export default {
 
 .invitation-message.error {
   color: #ff4d4f;
+}
+
+.invitation-hint {
+  display: block;
+  font-size: 12px;
+  color: #4d7aff;
+  margin-top: 5px;
+}
+
+.invitation-input input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
 }
 </style>

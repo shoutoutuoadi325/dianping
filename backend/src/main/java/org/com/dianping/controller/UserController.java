@@ -5,10 +5,12 @@ import java.util.Map;
 
 import org.com.dianping.DTO.NewUserRequest;
 import org.com.dianping.DTO.UserResponse;
+import org.com.dianping.entity.User;
 import org.com.dianping.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +24,7 @@ import jakarta.servlet.http.HttpSession;
  */
 @CrossOrigin(origins = "http://localhost:8081", allowCredentials = "true")
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
@@ -34,6 +36,26 @@ public class UserController {
      */
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    /**
+     * 通过ID获取用户信息
+     *
+     * @param id 用户ID
+     * @return 用户信息
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> getUserById(@PathVariable Long id) {
+        User user = userService.getUserById(id);
+        if (user != null) {
+            Map<String, Object> userInfo = Map.of(
+                "id", user.getId(),
+                "username", user.getUsername()
+            );
+            return ResponseEntity.ok(userInfo);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     /**

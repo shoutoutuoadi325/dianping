@@ -5,7 +5,6 @@ import BusinessDetail from "@/views/BusinessDetail.vue";
 import UserInfo from "@/views/UserInfo.vue";
 import NearbyFood from '@/views/NearbyFood.vue'
 import LifeZone from '@/views/LifeZone.vue'
-import AddReview from '@/views/AddReview.vue'
 import My from '@/views/My.vue'
 import PackageDetail from '@/views/PackageDetail.vue'
 import OrderConfirmation from '@/views/OrderConfirmation.vue'
@@ -52,12 +51,6 @@ const routes = [
         path: '/life-zone',
         name: 'LifeZone',
         component: LifeZone,
-        meta: {requiresAuth: true}
-    },
-    {
-        path: '/add-review',
-        name: 'AddReview',
-        component: AddReview,
         meta: {requiresAuth: true}
     },
     {

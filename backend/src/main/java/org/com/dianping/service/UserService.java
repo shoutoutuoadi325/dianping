@@ -145,4 +145,14 @@ public class UserService {
         String inviterUsername,
         String message
     ) {}
+
+    /**
+     * 根据ID获取用户
+     *
+     * @param id 用户ID
+     * @return 用户对象，如果不存在则返回null
+     */
+    public User getUserById(Long id) {
+        return userRepository.findById(id).orElse(null);
+    }
 }

@@ -112,7 +112,7 @@
           <div v-for="review in filterTopLevelReviews()" :key="review.id" class="review-item">            
             <div class="review-content-wrapper">
               <div class="review-avatar">
-                <div class="avatar-circle">
+                <div class="avatar-circle" :style="{ backgroundColor: getUserColor(review.userID) }">
                   {{ getUserInitial(review.userID) }}
                 </div>
               </div>
@@ -331,13 +331,28 @@ export default {
       if (this.users[userId]) return;
       
       try {
-        // 正确的API路径应该是 /api/users/{userId}
-        const response = await axios.get(`/api/users/${userId}`);
-        console.log(`获取到用户信息 (ID: ${userId}):`, response.data);
-        this.users[userId] = response.data;
+        // 由于后端没有提供通过ID获取用户信息的API，我们使用一个间接方法
+        // 首先尝试从localStorage中获取当前用户信息
+        const currentUserInfo = JSON.parse(localStorage.getItem('userInfo'));
+        
+        // 如果是当前登录用户，直接使用本地存储的用户信息
+        if (currentUserInfo && currentUserInfo.id === userId) {
+          console.log(`使用本地缓存的用户信息 (ID: ${userId}):`, currentUserInfo);
+          this.users[userId] = {
+            id: currentUserInfo.id,
+            username: currentUserInfo.username
+          };
+          return;
+        }
+        
+        // 对于其他用户，我们创建一个默认的用户信息对象
+        console.log(`创建默认用户信息 (ID: ${userId})`);
+        this.users[userId] = { 
+          id: userId,
+          username: `用户${userId}`
+        };
       } catch (error) {
-        console.error(`获取用户信息失败 (ID: ${userId}):`, error);
-        // 创建一个默认用户对象，包含基本信息以防获取失败
+        console.error(`获取/创建用户信息失败 (ID: ${userId}):`, error);
         this.users[userId] = { 
           id: userId,
           username: `用户${userId}`
@@ -510,6 +525,19 @@ export default {
         return user.username.charAt(0).toUpperCase();
       }
       return 'U';
+    },
+    
+    // 根据用户ID生成一个固定的颜色
+    getUserColor(userId) {
+      // 预定义的颜色数组，柔和但有区分度的颜色
+      const colors = [
+        '#4A90E2', '#50C878', '#F5A623', '#E74C3C', '#9B59B6', 
+        '#3498DB', '#2ECC71', '#F1C40F', '#E67E22', '#8E44AD'
+      ];
+      
+      // 使用userId作为索引选择颜色
+      const colorIndex = (userId % colors.length);
+      return colors[colorIndex];
     }
   }
 }
@@ -823,7 +851,6 @@ export default {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background-color: #4a90e2;
   color: white;
   display: flex;
   justify-content: center;

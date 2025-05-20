@@ -10,8 +10,9 @@ public record CouponResponse(
     String type,
     Double value,
     Double minAmount,
+    Double maxAmount,
     String expireTime) {
     public CouponResponse(Coupon coupon) {
-        this(coupon.getCouponName(), coupon.getUserId(), coupon.getCouponAmount(), coupon.getCategory(), coupon.getShopId().toString(), coupon.getType(), coupon.getValue(), coupon.getMinAmount(), coupon.getExpireTime().toString());
+        this(coupon.getCouponName(), coupon.getUserId(), coupon.getCouponAmount(), coupon.getCategory(), coupon.getShopId().toString(), coupon.getType(), coupon.getValue(), coupon.getMinAmount(), coupon.getMaxAmount(), coupon.getExpireTime().toString());
     }
 }

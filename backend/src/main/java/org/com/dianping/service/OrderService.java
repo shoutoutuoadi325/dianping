@@ -206,7 +206,7 @@ public class OrderService {
                 }
                 break;
             case "折扣":
-                discount = originalPrice * (1 - coupon.getValue()/10);
+                discount = Math.min(originalPrice * (1 - coupon.getValue()/10), coupon.getMaxAmount());
                 break;
             case "立减":
                 discount = Math.min(coupon.getValue(), originalPrice);

@@ -5,6 +5,7 @@ import java.util.List;
 import org.com.dianping.entity.Review;
 import org.com.dianping.service.ReviewService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,15 +20,15 @@ public class ReviewController {
     }
 
     @GetMapping("/merchant/{merchantID}")
-    public List<Review> getReviewsByMerchantID(Long merchantID) {
+    public List<Review> getReviewsByMerchantID(@PathVariable Long merchantID) {
         return reviewService.getReviewsByMerchantID(merchantID);
     }
     @GetMapping("/user/{userID}")
-    public List<Review> getReviewsByUserID(Long userID) {
+    public List<Review> getReviewsByUserID(@PathVariable Long userID) {
         return reviewService.getReviewsByUserID(userID);
     }
     @GetMapping("/parent/{parentID}")
-    public List<Review> getReviewsByParentID(Long parentID) {
+    public List<Review> getReviewsByParentID(@PathVariable Long parentID) {
         return reviewService.getReviewsByParentID(parentID);
     }
 

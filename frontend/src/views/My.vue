@@ -44,14 +44,6 @@
       </button>
 
       <button
-          class="main-btn review-btn"
-          @click="$router.push('/add-review')"
-      >
-        <i class="fas fa-edit"></i>
-        我要评价
-      </button>
-
-      <button
           class="main-btn life-btn"
           @click="$router.push('/life-zone')"
       >

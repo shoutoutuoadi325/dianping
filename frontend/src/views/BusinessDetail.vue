@@ -267,6 +267,9 @@ export default {
       const response = await axios.get(`/api/businesses/${id}`);
       this.business = response.data;
       
+      // 加载用户名缓存
+      this.loadUserNameCache();
+      
       // 获取该商户的套餐列表
       this.fetchPackages(id);
       
@@ -313,6 +316,24 @@ export default {
         console.log('评论获取结果:', response.data);
         this.reviews = response.data;
         
+        // 检查评论数据中是否包含username字段，有则更新用户缓存
+        let hasUpdatedCache = false;
+        this.reviews.forEach(review => {
+          if (review.username && (!this.users[review.userID] || this.users[review.userID].username === `用户${review.userID}`)) {
+            this.users[review.userID] = {
+              id: review.userID,
+              username: review.username
+            };
+            hasUpdatedCache = true;
+            console.log(`从评论中获取到用户名 (ID: ${review.userID}): ${review.username}`);
+          }
+        });
+        
+        // 如果有更新，保存缓存
+        if (hasUpdatedCache) {
+          this.saveUserNameCache();
+        }
+        
         // 获取所有评论中出现的用户ID
         const userIds = [...new Set(this.reviews.map(review => review.userID))];
         console.log('评论中的用户IDs:', userIds);
@@ -331,7 +352,6 @@ export default {
       if (this.users[userId]) return;
       
       try {
-        // 由于后端没有提供通过ID获取用户信息的API，我们使用一个间接方法
         // 首先尝试从localStorage中获取当前用户信息
         const currentUserInfo = JSON.parse(localStorage.getItem('userInfo'));
         
@@ -342,6 +362,9 @@ export default {
             id: currentUserInfo.id,
             username: currentUserInfo.username
           };
+          
+          // 保存到缓存中
+          this.saveUserNameCache();
           return;
         }
         
@@ -361,7 +384,13 @@ export default {
     },
     
     getUserName(userId) {
-      return this.users[userId]?.username || '未知用户';
+      // 对于已缓存的用户，直接使用其信息
+      if (this.users[userId] && this.users[userId].username) {
+        return this.users[userId].username;
+      }
+      
+      // 如果无法获取用户名，返回默认值
+      return `用户${userId}`;
     },
     
     formatDate(dateString) {
@@ -457,14 +486,24 @@ export default {
           parentID = Number(parentID);
         }
         
+        // 在评论数据中添加username字段，便于前端显示
         const reviewData = {
           userID: userInfo.id,
           merchantID: this.business.id,
           rating: this.isReply ? 0 : this.newReview.rating,
           comment: this.newReview.comment,
           parentID: parentID,
-          createTime: new Date().toISOString()
+          createTime: new Date().toISOString(),
+          // 添加用户名信息，这个字段会被后端忽略，但会在前端的响应中返回
+          username: userInfo.username
         };
+        
+        // 同时更新本地用户缓存
+        this.users[userInfo.id] = {
+          id: userInfo.id,
+          username: userInfo.username
+        };
+        this.saveUserNameCache();
         
         console.log('准备提交的评论数据:', reviewData);
         const response = await axios.post('/api/reviews/add', reviewData);
@@ -538,6 +577,30 @@ export default {
       // 使用userId作为索引选择颜色
       const colorIndex = (userId % colors.length);
       return colors[colorIndex];
+    },
+    loadUserNameCache() {
+      try {
+        // 从localStorage加载用户名缓存
+        const cachedUsers = localStorage.getItem('userNameCache');
+        if (cachedUsers) {
+          const parsedCache = JSON.parse(cachedUsers);
+          // 合并缓存到当前用户映射
+          this.users = { ...this.users, ...parsedCache };
+          console.log('已加载用户名缓存:', this.users);
+        }
+      } catch (error) {
+        console.error('加载用户名缓存失败:', error);
+      }
+    },
+    
+    saveUserNameCache() {
+      try {
+        // 将当前用户映射保存到localStorage
+        localStorage.setItem('userNameCache', JSON.stringify(this.users));
+        console.log('用户名缓存已保存:', this.users);
+      } catch (error) {
+        console.error('保存用户名缓存失败:', error);
+      }
     }
   }
 }

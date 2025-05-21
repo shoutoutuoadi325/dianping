@@ -70,7 +70,13 @@ export default {
   },
   methods: {
     getUserName(userId) {
-      return this.users[userId]?.username || '未知用户';
+      // 对于已缓存的用户，直接使用其信息
+      if (this.users[userId] && this.users[userId].username) {
+        return this.users[userId].username;
+      }
+      
+      // 如果无法获取用户名，返回默认值
+      return `用户${userId}`;
     },
     formatDate(dateString) {
       if (!dateString) return '';

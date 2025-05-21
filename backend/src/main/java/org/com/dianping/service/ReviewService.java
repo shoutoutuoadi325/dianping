@@ -36,10 +36,21 @@ public class ReviewService {
         return reviews;
     }
 
+    public Integer getUseFulReviewCountByUserID(Long userId) {
+        List<Review> reviews = getReviewsByUserID(userId);
+        Integer count = 0;
+        for (Review review : reviews) {
+            if (review.getComment().length() >= 15) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     public void createReview(Review review) {
         if (merchantRepository.existsById(review.getMerchantID())) {
             if (userRepository.existsById(review.getUserID())) {
-                if(getReviewsByUserID(review.getUserID()).size() == 2 && review.getComment().length() >= 15) {
+                if(getUseFulReviewCountByUserID(review.getUserID()) == 2 && review.getComment().length() >= 15) {
                     couponService.issueNewUserCoupons(review.getUserID(), 'E');
                     reviewRepository.save(review);
                 }else{

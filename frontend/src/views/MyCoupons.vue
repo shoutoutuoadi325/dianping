@@ -115,7 +115,7 @@ export default {
   mounted() {
     const storedUserInfo = localStorage.getItem('userInfo');
     if (!storedUserInfo) {
-      this.$router.push('/login');
+      this.$router.push('/auth');
       return;
     }
     this.userInfo = JSON.parse(storedUserInfo);

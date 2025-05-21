@@ -78,7 +78,7 @@ export default {
       this.userInfo = JSON.parse(userData)
       await this.checkUserOrders();
     } else {
-      this.$router.push('/login')
+      this.$router.push('/auth')
     }
   },
   methods: {

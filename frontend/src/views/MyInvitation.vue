@@ -20,7 +20,7 @@
       <h3>邀请记录</h3>
       <ul>
         <li v-for="record in invitationRecords" :key="record.id">
-          {{ record.inviteeName }} - 下单时间：{{ record.orderTime }} - 金额：¥{{ record.price }}
+          用户名： {{ record.inviteeName }} <br>- 下单时间：{{ record.orderTime }} <br>- 金额：¥{{ record.price }}
         </li>
       </ul>
     </div>
@@ -31,7 +31,7 @@
       <h4 v-else>邀请 2 位新人朋友，可领取奖励券</h4>
       <ul>
         <li v-for="coupon in rewardCoupons" :key="coupon.id">
-          {{ coupon.couponName }} - 有效期至 {{ coupon.expireTime }}
+          {{ coupon.couponName }} <br>- 发放时间：{{coupon.atTime}} <br>- 有效期至 {{ coupon.expireTime }}
         </li>
       </ul>
     </div>

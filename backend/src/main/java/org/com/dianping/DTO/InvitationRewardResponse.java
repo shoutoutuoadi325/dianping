@@ -7,6 +7,7 @@ public record InvitationRewardResponse(
         Long couponId,
         String couponName,
         Long count,
+        LocalDateTime atTime,
         LocalDateTime expireTime
 ) {
 }

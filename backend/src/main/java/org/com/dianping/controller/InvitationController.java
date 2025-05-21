@@ -6,6 +6,7 @@ import org.com.dianping.entity.InvitationReward;
 import org.com.dianping.entity.User;
 import org.com.dianping.repository.*;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,9 +46,10 @@ public class InvitationController {
                     Coupon c = couponRepo.findById(r.getCouponId()).orElse(null);
                     return new InvitationRewardResponse(
                             r.getId(),
-                            c !=null? c.getId():null,
+                            c != null ? c.getId() : null,
                             c != null ? c.getCouponName() : "已过期优惠券",
                             r.getTotalCount(), // 使用实际保存的总邀请人数
+                            c != null ? c.getExpireTime().minusDays(7) : null,
                             c != null ? c.getExpireTime() : null
                     );
                 }).collect(Collectors.toList());

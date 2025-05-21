@@ -27,7 +27,8 @@
 
     <div class="reward-coupons">
       <h3>奖励券明细</h3>
-      <h4 >还差{{ remaining }}位，可领取奖励券</h4>
+      <h4 v-if="remaining>0">还差{{ remaining }}位，可再次领取奖励券</h4>
+      <h4 v-else>邀请 2 位新人朋友，可领取奖励券</h4>
       <ul>
         <li v-for="coupon in rewardCoupons" :key="coupon.id">
           {{ coupon.couponName }} - 有效期至 {{ coupon.expireTime }}
@@ -83,7 +84,9 @@ export default {
           .then(data => {
             this.invitationRecords = data;
             this.totalCount = data.length ;
+            if(this.totalCount>0)
             this.remaining = (2 - (this.totalCount % 2));
+            else this.remaining=-1;
           })
           .catch(err => console.error('获取邀请记录失败:', err));
     },

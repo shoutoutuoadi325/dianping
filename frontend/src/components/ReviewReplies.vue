@@ -122,19 +122,40 @@ export default {
 
 <style scoped>
 .replies-container {
-  margin-top: 15px;
-  margin-left: 20px;
-  padding-left: 15px;
+  margin-top: 18px;
+  margin-left: 25px;
+  padding-left: 18px;
   border-left: 2px solid #e0e0e0;
+  animation: slideDown 0.4s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .reply-item {
   display: flex;
-  margin-bottom: 15px;
-  padding: 12px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  margin-bottom: 18px;
+  padding: 16px;
+  background: #f9fafc;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+}
+
+.reply-item:hover {
+  transform: translateX(5px);
+  background: #f0f5ff;
+  border-left-color: #4a90e2;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .reply-item:last-child {
@@ -161,6 +182,12 @@ export default {
   align-items: center;
   font-size: 1.2rem;
   font-weight: bold;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+  transition: transform 0.3s ease;
+}
+
+.reply-item:hover .avatar-circle {
+  transform: scale(1.1);
 }
 
 .review-content {
@@ -172,27 +199,46 @@ export default {
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .review-username {
   font-weight: bold;
   color: #333;
+  position: relative;
+  padding-bottom: 2px;
+}
+
+.review-username::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 1px;
+  background: #4a90e2;
+  transition: width 0.3s ease;
+}
+
+.reply-item:hover .review-username::after {
+  width: 100%;
 }
 
 .review-date {
   color: #999;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 }
 
 .review-text {
-  line-height: 1.5;
-  margin-bottom: 10px;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  color: #444;
+  letter-spacing: 0.2px;
 }
 
 .review-actions {
   display: flex;
-  gap: 15px;
+  gap: 20px;
   margin-top: 10px;
 }
 
@@ -200,10 +246,15 @@ export default {
   cursor: pointer;
   color: #4a90e2;
   font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
 }
 
 .reply-button:hover {
-  text-decoration: underline;
+  color: #2a70c2;
+  transform: translateX(3px);
 }
 
 .view-replies {
@@ -212,10 +263,67 @@ export default {
   font-size: 0.9rem;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  transition: all 0.2s ease;
 }
 
 .view-replies:hover {
-  text-decoration: underline;
+  color: #2a70c2;
+  transform: translateY(-2px);
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+  .replies-container {
+    margin-left: 18px;
+    padding-left: 15px;
+  }
+  
+  .reply-item {
+    padding: 14px;
+  }
+  
+  .avatar-circle {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+  
+  .review-avatar {
+    width: 35px;
+    height: 35px;
+    margin-right: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .replies-container {
+    margin-left: 12px;
+    padding-left: 12px;
+  }
+  
+  .reply-item {
+    padding: 12px;
+  }
+  
+  .review-text {
+    font-size: 0.95rem;
+  }
+  
+  .avatar-circle {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+  
+  .review-avatar {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+  }
+  
+  .review-actions {
+    gap: 15px;
+  }
 }
 </style> 

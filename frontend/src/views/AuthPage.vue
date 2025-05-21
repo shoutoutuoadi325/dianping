@@ -1,131 +1,181 @@
 <!-- AuthPage.vue -->
 <template>
   <div class="auth-page">
-    <!-- 左侧背景图 -->
+    <!-- 左侧背景区域 -->
     <div class="background-section">
       <div class="background-overlay"></div>
       <img src="@/assets/background.jpg" alt="背景图" class="background-image">
+      <div class="brand-info">
+        <h1 class="brand-title">小众点评</h1>
+        <p class="brand-slogan">发现城市中的生活美学</p>
+      </div>
     </div>
 
     <!-- 右侧表单区域 -->
     <div class="form-section">
-      <!-- 登录/注册切换 -->
-      <div class="auth-switch">
-        <h2 :class="{ active: !isLogin }" @click="switchForm('register')">注册</h2>
-        <h2 :class="{ active: isLogin }" @click="switchForm('login')">登录</h2>
-      </div>
-
-      <!-- 注册表单 -->
-      <form v-if="!isLogin" @submit.prevent="handleRegister" class="auth-form">
-        <div class="form-item" ref="usernameInput">
-          <input
-              type="text"
-              v-model="registerForm.username"
-              placeholder="用户名"
-              @input="validUsername"
-              @blur="validUsername"
-          ><!-- 直接使用 Font Awesome 图标 -->
-          <span class="icon-user"><i class="fas fa-user"></i></span>
-
-          <div class="username-wrapper">
-            <span class="validUsername-text">{{ userNameMessage }}</span>
+      <div class="auth-container">
+        <!-- 登录/注册切换 -->
+        <div class="auth-switch">
+          <div class="switch-container">
+            <h2 :class="{ active: !isLogin }" @click="switchForm('register')">注册</h2>
+            <h2 :class="{ active: isLogin }" @click="switchForm('login')">登录</h2>
+            <div class="slider" :class="isLogin ? 'right' : 'left'"></div>
           </div>
         </div>
-        <div class="form-item" ref="passwordInput">
-          <input
-              :type="showPassword_register ? 'text' : 'password'"
-              v-model="registerForm.password"
-              placeholder="密码"
-              @input="checkPasswordStrength"
-              inputmode="latin"
-              @compositionstart="disableIME"
-              @compositionend="disableIME"
 
-          ><!-- 使用 Font Awesome 的锁图标 -->
-          <span class="icon-lock"><i class="fas fa-lock"></i></span>
-          <!-- 添加密码显示切换按钮 -->
-          <span class="toggle-password" @click="togglePassword">
-  <i :class="showPassword_register ? 'fa fa-eye' : 'fa fa-eye-slash'"></i>
-</span>
-          <!-- 密码强度显示 -->
-          <div class="password-strength-wrapper">
-            <div class="password-strength">
-              <div class="strength-bar" :class="[strengthClass, { 'invalid': strengthClass === 'none' }]"
-                   :style="{ width: strengthWidth }"></div>
-            </div>
-            <span class="strength-text" :class="{ 'invalid-text': strengthClass === 'none' }">{{
-                passwordStrength
-              }}</span>
-          </div>
+        <!-- 表单容器 -->
+        <div class="form-container">
+          <!-- 注册表单 -->
+          <transition name="slide-fade" mode="out-in">
+            <form v-if="!isLogin" @submit.prevent="handleRegister" class="auth-form">
+              <div class="form-item" ref="usernameInput">
+                <label class="form-label">用户名</label>
+                <div class="input-container">
+                  <span class="icon-user"><i class="fas fa-user"></i></span>
+                  <input
+                      type="text"
+                      v-model="registerForm.username"
+                      placeholder="请输入4-20位字母、数字或下划线"
+                      @input="validUsername"
+                      @blur="validUsername"
+                  >
+                </div>
+                <div class="username-wrapper">
+                  <transition name="fade">
+                    <span v-if="userNameMessage" class="validUsername-text" :class="{'success-message': userNameMessage.includes('可用')}">{{ userNameMessage }}</span>
+                  </transition>
+                </div>
+              </div>
+              
+              <div class="form-item" ref="passwordInput">
+                <label class="form-label">密码</label>
+                <div class="input-container">
+                  <span class="icon-lock"><i class="fas fa-lock"></i></span>
+                  <input
+                      :type="showPassword_register ? 'text' : 'password'"
+                      v-model="registerForm.password"
+                      placeholder="至少6位，必须包含字母和数字"
+                      @input="checkPasswordStrength"
+                      inputmode="latin"
+                      @compositionstart="disableIME"
+                      @compositionend="disableIME"
+                  >
+                  <span class="toggle-password" @click="togglePassword">
+                    <i :class="showPassword_register ? 'fas fa-eye' : 'fas fa-eye-slash'"></i>
+                  </span>
+                </div>
+                
+                <!-- 密码强度显示 -->
+                <div class="password-strength-wrapper">
+                  <div class="password-strength">
+                    <div class="strength-bar" :class="[strengthClass, { 'invalid': strengthClass === 'none' }]"
+                        :style="{ width: strengthWidth }"></div>
+                  </div>
+                  <span class="strength-text" :class="{ 'invalid-text': strengthClass === 'none', 'success-text': strengthClass === 'strong' || strengthClass === 'very-strong' }">{{
+                      passwordStrength
+                    }}</span>
+                </div>
+              </div>
+              
+              <div class="form-item captcha-item" ref="captchaInput">
+                <label class="form-label">验证码</label>
+                <div class="captcha-container">
+                  <div class="input-container captcha-input-container">
+                    <input
+                        v-model="registerForm.captcha"
+                        placeholder="请输入验证码"
+                    >
+                  </div>
+                  <img
+                      :src="captchaUrl"
+                      class="captcha-img"
+                      @click="refreshCaptcha"
+                      alt="验证码"
+                      title="点击刷新验证码"
+                  >
+                </div>
+                <transition name="fade">
+                  <div v-if="captchaError" class="error-tip">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {{ captchaError }}
+                  </div>
+                </transition>
+              </div>
 
-        </div>
-        <div class="form-item captcha-item" ref="captchaInput">
-          <input
-              v-model="registerForm.captcha"
-              placeholder="验证码"
-          >
-          <img
-              :src="captchaUrl"
-              class="captcha-img"
-              @click="refreshCaptcha"
-              alt="">
-          <transition name="fade">
-            <div v-if="captchaError" class="error-tip">
-              <i class="fas fa-exclamation-triangle"></i>
-              {{ captchaError }}
-            </div>
+              <button type="submit" class="submit-btn">
+                <span>立即注册</span>
+                <i class="fas fa-arrow-right"></i>
+              </button>
+
+              <!-- 用户协议 -->
+              <div class="agreement">
+                点击注册即表示同意
+                <a href="javascript:void(0)" @click="showText('微信号: ...，电话: ...')">《用户协议》</a>和
+                <a href="javascript:void(0)" @click="showText('微信号: ...，电话: ...')">《隐私政策》</a>
+              </div>
+            </form>
+
+            <!-- 登录表单 -->
+            <form v-else @submit.prevent="handleLogin" class="auth-form">
+              <div class="form-item" ref="usernameInput">
+                <label class="form-label">用户名</label>
+                <div class="input-container">
+                  <span class="icon-user"><i class="fas fa-user"></i></span>
+                  <input
+                      type="text"
+                      v-model="loginForm.username"
+                      @input="validLoginUsername"
+                      placeholder="请输入您的用户名"
+                  >
+                </div>
+                <div class="username-wrapper">
+                  <transition name="fade">
+                    <span v-if="loginUserNameError" class="validUsername-text">{{ loginUserNameError }}</span>
+                  </transition>
+                </div>
+              </div>
+
+              <div class="form-item" ref="passwordInput">
+                <label class="form-label">密码</label>
+                <div class="input-container">
+                  <span class="icon-lock"><i class="fas fa-lock"></i></span>
+                  <input
+                      :type="showPassword_login ? 'text' : 'password'"
+                      v-model="loginForm.password"
+                      placeholder="请输入您的密码"
+                      @input="checkPasswordStrength"
+                      inputmode="latin"
+                      @compositionstart="disableIME"
+                      @compositionend="disableIME"
+                  >
+                  <span class="toggle-password" @click="togglePassword">
+                    <i :class="showPassword_login ? 'fas fa-eye' : 'fas fa-eye-slash'"></i>
+                  </span>
+                </div>
+                <div class="password-wrapper">
+                  <transition name="fade">
+                    <span v-if="loginPasswordError" class="validPassword-text">{{ loginPasswordError }}</span>
+                  </transition>
+                </div>
+              </div>
+
+              <button type="submit" class="submit-btn">
+                <span>立即登录</span>
+                <i class="fas fa-arrow-right"></i>
+              </button>
+              
+              <div class="login-options">
+                <div class="remember-me">
+                  <input type="checkbox" id="remember" v-model="rememberMe">
+                  <label for="remember">记住我</label>
+                </div>
+                <a href="#" class="forgot-password">忘记密码?</a>
+              </div>
+            </form>
           </transition>
         </div>
-
-        <button type="submit" class="submit-btn">立即注册</button>
-
-        <!-- 用户协议 -->
-        <div class="agreement">
-          点击注册即表示同意
-          <a href="javascript:void(0)" @click="showText('微信号: ...，电话: ...')">《用户协议》</a>和
-          <a href="javascript:void(0)" @click="showText('微信号: ...，电话: ...')">《隐私政策》</a>
-        </div>
-      </form>
-
-      <!-- 登录表单 -->
-      <form v-else="isLogin" @submit.prevent="handleLogin" class="auth-form">
-
-        <div class="form-item" ref="usernameInput">
-          <input
-              type="text"
-              v-model="loginForm.username"
-              @input="validLoginUsername"
-              placeholder="用户名"
-          >
-          <span class="icon-user"><i class="fas fa-user"></i></span>
-          <div class="username-wrapper">
-            <span class="validUsername-text">{{ loginUserNameError }}</span>
-          </div>
-        </div>
-
-        <div class="form-item" ref="passwordInput">
-          <input
-              :type="showPassword_login ? 'text' : 'password'"
-              v-model="loginForm.password"
-              placeholder="密码"
-              @input="checkPasswordStrength"
-              inputmode="latin"
-              @compositionstart="disableIME"
-              @compositionend="disableIME"
-          >
-          <span class="icon-lock"><i class="fas fa-lock"></i></span>
-          <!-- 添加密码显示切换按钮 -->
-          <span class="toggle-password" @click="togglePassword">
-  <i :class="showPassword_login ? 'fa fa-eye' : 'fa fa-eye-slash'"></i>
-</span>
-          <div class="password-wrapper">
-            <span class="validPassword-text">{{ loginPasswordError }}</span>
-          </div>
-        </div>
-
-        <button type="submit" class="submit-btn">立即登录</button>
-        <!-- 第三方登录？ -->
-      </form>
+      </div>
+      
       <!-- 底部链接 -->
       <div class="footer-links">
         <a href="https://dianping.com">关于我们</a>
@@ -134,9 +184,12 @@
         <a href="javascript:void(0)" @click="showText('微信号: ...，电话: ...')">合作伙伴</a>
         <a href="javascript:void(0)" @click="showText('微信号: ...，电话: ...')">隐私政策</a>
       </div>
-      <div v-if="currentText" class="info-display">
-        {{ currentText }}
-      </div>
+      
+      <transition name="fade">
+        <div v-if="currentText" class="info-display">
+          {{ currentText }}
+        </div>
+      </transition>
     </div>
   </div>
 </template>
@@ -149,6 +202,7 @@ export default {
       passwordError: '',
       validCaptcha: false,
       captchaError: '',
+      rememberMe: false,
       passwordStrengthRules: [
         {regex: /.{8,}/, score: 1},       // 长度>=8
         {regex: /.{10,}/, score: 1},      //长度>=10
@@ -173,18 +227,33 @@ export default {
         password: ''
       },
       registerForm: {
-        phone: '',
+        username: '',
         password: '',
         captcha: ''
       },
       passwordStrength: '',
-      strengthClass: 'none', strengthWidth: '0',
+      strengthClass: 'none', 
+      strengthWidth: '0',
       userNameMessage: '',
       userNameError: '',
       currentText: '',
       loginUserNameError: '',
       loginPasswordError: '',
+      formAnimation: 'fade'
     }
+  },
+  mounted() {
+    // 检查本地存储中是否有保存的用户名
+    const savedUsername = localStorage.getItem('rememberedUsername');
+    if (savedUsername) {
+      this.loginForm.username = savedUsername;
+      this.rememberMe = true;
+    }
+    
+    // 添加页面加载动画
+    setTimeout(() => {
+      document.querySelector('.auth-page').classList.add('loaded');
+    }, 100);
   },
   methods: {
     showText(text) {
@@ -194,7 +263,13 @@ export default {
       }, 3000)
     },
     switchForm(type) {
-      this.isLogin = type === 'login'
+      this.isLogin = type === 'login';
+      // 重置错误信息
+      this.userNameMessage = '';
+      this.loginUserNameError = '';
+      this.loginPasswordError = '';
+      this.passwordError = '';
+      this.captchaError = '';
     },
     // 注册用户名校验方法
     async validUsername() {
@@ -318,10 +393,25 @@ export default {
           username: this.loginForm.username,
           password: this.loginForm.password
         });
+        
+        // 处理"记住我"功能
+        if (this.rememberMe) {
+          localStorage.setItem('rememberedUsername', this.loginForm.username);
+        } else {
+          localStorage.removeItem('rememberedUsername');
+        }
+        
         // 保存用户信息到本地存储（根据实际返回字段调整）
         localStorage.setItem('userInfo', JSON.stringify(res.data));
-        // 跳转到首页
-        this.$router.push('/my');
+        
+        // 添加成功动画
+        this.showSuccessMessage('登录成功！正在跳转...');
+        
+        // 延迟跳转以显示成功消息
+        setTimeout(() => {
+          // 跳转到首页
+          this.$router.push('/my');
+        }, 1500);
       } catch (err) {
         // 处理错误信息
         const errorMsg = err.response?.data?.message || '登录失败';
@@ -340,7 +430,7 @@ export default {
     // 密码强度计算
     checkPasswordStrength() {
       // 过滤所有空格
-      if (this.registerForm.username)
+      if (this.registerForm.password)
         this.registerForm.password = this.registerForm.password.replace(/\s/g, '')
       if (this.loginForm.password)
         this.loginForm.password = this.loginForm.password.replace(/\s/g, '')
@@ -422,10 +512,17 @@ export default {
           captcha: this.registerForm.captcha
         });
 
+        // 添加成功动画
+        this.showSuccessMessage('注册成功！正在跳转...');
+
         // 注册成功后自动登录
         localStorage.setItem('userInfo', JSON.stringify(res.data));
-        // 跳转到首页
-        this.$router.push('/my');
+        
+        // 延迟跳转以显示成功消息
+        setTimeout(() => {
+          // 跳转到首页
+          this.$router.push('/my');
+        }, 1500);
       } catch (err) {
         const errorMsg = err.response?.data?.message || '注册失败';
 
@@ -446,6 +543,16 @@ export default {
       }
     }
     ,
+    // 显示成功消息
+    showSuccessMessage(message) {
+      // 可以根据UI组件库选择不同的实现方式
+      this.$message = this.$message || {};
+      if (this.$message.success) {
+        this.$message.success(message);
+      } else {
+        alert(message);
+      }
+    },
     // 触发震动效果的通用方法
     triggerShake(type) {
       const refMap = {

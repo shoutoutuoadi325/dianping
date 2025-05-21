@@ -3,7 +3,10 @@
   <div class="business-detail">
     <div class="cover-image-container">
       <div class="cover-overlay"></div>
-      <img :src="coverImage" :alt="business.merchantName">
+      <img :src="coverImage" :alt="business.merchantName" class="cover-image">
+      <div class="back-btn" @click="$router.go(-1)">
+        <i class="fas fa-arrow-left"></i>
+      </div>
       <h1 class="business-title">{{ business.merchantName }}</h1>
     </div>
 
@@ -286,8 +289,53 @@ export default {
       return '★'.repeat(fullStars) + (halfStar ? '☆' : '');
     },
     showFullImage(photo) {
-      // Logic to show full image in a modal or new view
-      console.log('Show full image:', photo);
+      // 创建一个全屏图片预览容器
+      const previewContainer = document.createElement('div');
+      previewContainer.classList.add('image-preview-container');
+      
+      // 创建关闭按钮
+      const closeBtn = document.createElement('div');
+      closeBtn.classList.add('preview-close-btn');
+      closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+      
+      // 创建图片元素
+      const image = document.createElement('img');
+      image.src = photo;
+      image.alt = '商家图片预览';
+      image.classList.add('preview-image');
+      
+      // 添加到容器
+      previewContainer.appendChild(closeBtn);
+      previewContainer.appendChild(image);
+      document.body.appendChild(previewContainer);
+      
+      // 防止滚动
+      document.body.style.overflow = 'hidden';
+      
+      // 添加关闭事件
+      closeBtn.addEventListener('click', () => {
+        previewContainer.classList.add('closing');
+        setTimeout(() => {
+          document.body.removeChild(previewContainer);
+          document.body.style.overflow = '';
+        }, 300);
+      });
+      
+      // 点击背景也可以关闭
+      previewContainer.addEventListener('click', (e) => {
+        if (e.target === previewContainer) {
+          previewContainer.classList.add('closing');
+          setTimeout(() => {
+            document.body.removeChild(previewContainer);
+            document.body.style.overflow = '';
+          }, 300);
+        }
+      });
+      
+      // 添加动画效果
+      setTimeout(() => {
+        previewContainer.classList.add('active');
+      }, 10);
     },
     async fetchPackages(businessId) {
       try {
@@ -609,7 +657,8 @@ export default {
 <style scoped>
 .page-container {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  padding-bottom: 40px;
 }
 
 .business-detail {
@@ -617,11 +666,13 @@ export default {
   margin: 0 auto;
 }
 
+/* 封面区域样式优化 */
 .cover-image-container {
   position: relative;
-  height: 400px;
+  height: 450px;
   overflow: hidden;
-  border-radius: 0 0 30px 30px;
+  border-radius: 0 0 35px 35px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
 .cover-overlay {
@@ -629,14 +680,59 @@ export default {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 50%;
-  background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.7));
+  height: 60%;
+  background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.8));
+  z-index: 1;
 }
 
-.cover-image-container img {
+.cover-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.6s ease;
+  animation: zoomIn 0.8s ease;
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(1.1);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.cover-image-container:hover .cover-image {
+  transform: scale(1.05);
+}
+
+.back-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  z-index: 10;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+  animation: fadeIn 0.6s ease;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.back-btn i {
+  font-size: 1.2rem;
 }
 
 .business-title {
@@ -644,62 +740,105 @@ export default {
   bottom: 30px;
   left: 40px;
   color: white;
-  font-size: 2.5rem;  /* 增大标题文字 */
-  font-weight: 600;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  font-size: 2.8rem;
+  font-weight: 700;
+  text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+  z-index: 2;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.8s ease forwards 0.3s;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .content-wrapper {
-  padding: 30px;
-  margin-top: -50px;
+  padding: 0 30px;
+  margin-top: -70px;
   position: relative;
+  z-index: 3;
 }
 
+/* 信息区域样式优化 */
 .info-section {
   background: white;
-  border-radius: 15px;
-  padding: 25px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  font-size: 1.1rem;  /* 增大信息文字 */
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  font-size: 1.1rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: fadeIn 0.8s ease;
+}
+
+.info-section:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .rating-box {
   text-align: center;
-  margin-bottom: 20px;
-  font-size: 1.8rem;  /* 增大评分文字 */
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
 }
 
 .stars {
-  color: #ffd700;
-  font-size: 24px;
-  margin-right: 10px;
+  color: #ffce00;
+  font-size: 28px;
+  margin-right: 12px;
+  letter-spacing: 3px;
 }
 
 .rating-value {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: bold;
   color: #333;
+  background: linear-gradient(45deg, #f5a623, #ff9500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .info-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
+  gap: 25px;
   margin-top: 20px;
 }
 
 .info-item {
   display: flex;
   align-items: center;
-  padding: 18px;  /* 增加内边距 */
+  padding: 20px;
   background: #f8f9fa;
-  border-radius: 10px;
+  border-radius: 12px;
+  border-left: 4px solid #4a90e2;
+  transition: all 0.3s ease;
+}
+
+.info-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  background: #f0f5ff;
 }
 
 .info-item i {
-  font-size: 1.4rem;  /* 增大图标 */
-  margin-right: 15px;
+  font-size: 1.6rem;
+  margin-right: 18px;
   color: #4a90e2;
+  transition: transform 0.3s ease;
+}
+
+.info-item:hover i {
+  transform: scale(1.2);
 }
 
 .info-text {
@@ -708,90 +847,142 @@ export default {
 }
 
 .info-text label {
-  font-size: 12px;
+  font-size: 14px;
   color: #666;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  font-weight: 500;
 }
 
 .info-text span {
-  font-size: 16px;
+  font-size: 17px;
   color: #333;
+  font-weight: 500;
 }
 
+/* 各区域共用样式 */
 .description-section, .gallery-section, .packages-section, .reviews-section {
   background: white;
-  border-radius: 15px;
-  padding: 25px;
-  margin-top: 20px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  border-radius: 18px;
+  padding: 30px;
+  margin-top: 25px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+.description-section:hover, .gallery-section:hover, 
+.packages-section:hover, .reviews-section:hover {
+  transform: translateY(-5px);
 }
 
 .description-section h3, .gallery-section h3, .packages-section h3, .reviews-section h3 {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   color: #333;
-  margin-bottom: 15px;
-  font-size: 1.6rem;  /* 增大描述标题 */
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.description-section h3::after, .gallery-section h3::after, 
+.packages-section h3::after, .reviews-section h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 80px;
+  height: 3px;
+  background: #4a90e2;
+  border-radius: 2px;
 }
 
 .description-section p {
-  line-height: 1.8;  /* 增加行高 */
-  font-size: 1.1rem;  /* 增大描述文字 */
-  color: #666;
+  line-height: 1.9;
+  font-size: 1.1rem;
+  color: #444;
+  letter-spacing: 0.2px;
 }
 
+/* 套餐区域样式优化 */
 .gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 15px;
-  margin-top: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 18px;
+  margin-top: 25px;
 }
 
 .gallery-item {
   aspect-ratio: 1;
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: transform 0.3s;
+  transition: all 0.3s;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  position: relative;
+}
+
+.gallery-item::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.2);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.gallery-item:hover::after {
+  opacity: 1;
 }
 
 .gallery-item:hover {
   transform: scale(1.05);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.15);
 }
 
 .gallery-item img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.6s;
 }
 
-/* 套餐样式 */
+.gallery-item:hover img {
+  transform: scale(1.1);
+}
+
+/* 套餐样式优化 */
 .packages-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
+  margin-top: 25px;
 }
 
 .package-item {
   display: flex;
   background: #f8f9fa;
-  border-radius: 12px;
+  border-radius: 15px;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  transition: all 0.4s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  border: 1px solid #eee;
+  height: 150px;
 }
 
 .package-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+  border-color: #4a90e2;
 }
 
 .package-image {
-  width: 120px;
-  height: 120px;
+  width: 150px;
+  height: 150px;
   overflow: hidden;
 }
 
@@ -799,100 +990,110 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.5s;
+}
+
+.package-item:hover .package-image img {
+  transform: scale(1.1);
 }
 
 .package-info {
   flex: 1;
-  padding: 15px;
+  padding: 20px;
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .package-info h4 {
-  margin: 0 0 10px 0;
-  font-size: 1.1rem;
+  margin: 0 0 12px 0;
+  font-size: 1.25rem;
   color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .package-price {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .current-price {
   color: #e53935;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   font-weight: bold;
 }
 
 .original-price {
   color: #999;
-  font-size: 0.9rem;
+  font-size: 1rem;
   text-decoration: line-through;
 }
 
 .package-sales {
   color: #666;
-  font-size: 0.8rem;
-}
-
-.buy-btn {
-  position: absolute;
-  bottom: 15px;
-  right: 15px;
-  padding: 6px 12px;
-  background: #e53935;
-  color: white;
-  border: none;
-  border-radius: 15px;
   font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.buy-btn:hover {
-  background: #c62828;
+  margin-top: auto;
 }
 
 .no-packages {
-  padding: 30px;
+  padding: 40px 20px;
   text-align: center;
   color: #999;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
+  background: #f9f9f9;
+  border-radius: 10px;
+  border: 1px dashed #ddd;
 }
 
-/* 评论区样式 */
+/* 评论区样式优化 */
 .reviews-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 .no-reviews {
-  padding: 30px;
+  padding: 40px 20px;
   text-align: center;
   color: #999;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
+  background: #f9f9f9;
+  border-radius: 10px;
+  border: 1px dashed #ddd;
 }
 
 .reviews-list {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 25px;
 }
 
 .review-item {
-  padding: 20px;
+  padding: 25px;
   background: #f8f9fa;
-  border-radius: 10px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+  border-left: 4px solid transparent;
 }
 
-/* 回复评论的样式 */
+.review-item:hover {
+  border-left-color: #4a90e2;
+  transform: translateX(5px);
+  background: #f0f5ff;
+}
+
+/* 回复评论的样式优化 */
 .reply-review {
-  margin-left: 40px;
-  background: rgba(248, 249, 250, 0.5);
+  margin-left: 45px;
+  background: rgba(248, 249, 250, 0.7);
   border-left: 3px solid #4a90e2;
 }
 
@@ -902,24 +1103,30 @@ export default {
 
 .review-avatar {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  margin-right: 15px;
+  width: 45px;
+  height: 45px;
+  margin-right: 18px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .avatar-circle {
-  width: 36px;
-  height: 36px;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
   color: white;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+.review-item:hover .avatar-circle {
+  transform: scale(1.1);
 }
 
 .review-content {
@@ -930,102 +1137,366 @@ export default {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 8px;
+  gap: 15px;
+  margin-bottom: 12px;
 }
 
 .review-username {
   font-weight: bold;
   color: #333;
+  font-size: 1.1rem;
 }
 
 .review-rating {
-  color: #ffd700;
+  color: #ffce00;
+  letter-spacing: 2px;
 }
 
 .review-date {
   color: #999;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
 
 .review-text {
-  line-height: 1.5;
-  margin-bottom: 10px;
+  line-height: 1.7;
+  margin-bottom: 15px;
+  color: #444;
 }
 
 .review-actions {
   display: flex;
-  gap: 15px;
-  margin-top: 10px;
+  gap: 20px;
+  margin-top: 15px;
 }
 
 .reply-button {
   cursor: pointer;
   color: #4a90e2;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .reply-button:hover {
-  text-decoration: underline;
+  color: #2a70c2;
+  transform: translateX(3px);
 }
 
 .reply-to-info {
-  margin-top: 8px;
+  margin-top: 10px;
   color: #4a90e2;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  background: rgba(74, 144, 226, 0.1);
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: inline-block;
 }
 
 .reply-info {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   color: #666;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 .reply-icon {
   color: #4a90e2;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
 
 .view-replies {
   cursor: pointer;
   color: #4a90e2;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
+  transition: all 0.2s ease;
 }
 
 .view-replies:hover {
-  text-decoration: underline;
+  color: #2a70c2;
+  transform: translateY(-2px);
 }
 
-.replies-container {
-  margin-top: 15px;
-  margin-left: 20px;
-  padding-left: 15px;
-  border-left: 2px solid #e0e0e0;
+/* 响应式适配 */
+@media (max-width: 992px) {
+  .package-item {
+    height: auto;
+  }
+  
+  .content-wrapper {
+    padding: 0 20px;
+  }
+  
+  .cover-image-container {
+    height: 380px;
+  }
+  
+  .business-title {
+    font-size: 2.4rem;
+    left: 30px;
+    bottom: 25px;
+  }
 }
 
-.reply-item {
+@media (max-width: 768px) {
+  .cover-image-container {
+    height: 300px;
+    border-radius: 0 0 25px 25px;
+  }
+  
+  .business-title {
+    font-size: 2rem;
+    left: 20px;
+    bottom: 20px;
+  }
+  
+  .content-wrapper {
+    padding: 0 15px;
+    margin-top: -50px;
+  }
+  
+  .info-section, .description-section, .gallery-section, .packages-section, .reviews-section {
+    padding: 20px;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .gallery {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  
+  .packages-list {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .description-section h3, .gallery-section h3, .packages-section h3, .reviews-section h3 {
+    font-size: 1.4rem;
+  }
+  
+  .description-section p {
+    font-size: 1rem;
+  }
+  
+  .review-avatar {
+    width: 40px;
+    height: 40px;
+    margin-right: 15px;
+  }
+  
+  .avatar-circle {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+  
+  .package-image {
+    width: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cover-image-container {
+    height: 250px;
+  }
+  
+  .business-title {
+    font-size: 1.7rem;
+    left: 15px;
+    bottom: 15px;
+  }
+  
+  .content-wrapper {
+    margin-top: -40px;
+    padding: 0 10px;
+  }
+  
+  .info-section, .description-section, .gallery-section, .packages-section, .reviews-section {
+    padding: 15px;
+    border-radius: 15px;
+  }
+  
+  .rating-box {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+  }
+  
+  .stars {
+    font-size: 22px;
+  }
+  
+  .rating-value {
+    font-size: 20px;
+  }
+  
+  .info-item {
+    padding: 15px;
+  }
+  
+  .info-text label {
+    font-size: 12px;
+  }
+  
+  .info-text span {
+    font-size: 15px;
+  }
+  
+  .gallery {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+  }
+  
+  .package-image {
+    width: 100px;
+  }
+  
+  .package-info {
+    padding: 15px;
+  }
+  
+  .package-info h4 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+  }
+  
+  .current-price {
+    font-size: 1.2rem;
+  }
+  
+  .review-item {
+    padding: 15px;
+  }
+  
+  .review-text {
+    font-size: 0.95rem;
+  }
+  
+  .review-header {
+    gap: 10px;
+  }
+  
+  .review-username {
+    font-size: 1rem;
+  }
+  
+  .review-avatar {
+    width: 35px;
+    height: 35px;
+    margin-right: 12px;
+  }
+  
+  .avatar-circle {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+}
+
+/* 图片预览样式 */
+:global(.image-preview-container) {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 9999;
   display: flex;
-  margin-bottom: 15px;
-  padding: 12px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-.nested-replies {
-  margin-top: 12px;
-  margin-left: 15px;
-  padding-left: 15px;
-  border-left: 2px solid #e0e0e0;
+:global(.image-preview-container.active) {
+  opacity: 1;
 }
 
-.reply-item:last-child {
-  margin-bottom: 0;
+:global(.image-preview-container.closing) {
+  opacity: 0;
+}
+
+:global(.preview-image) {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+:global(.image-preview-container.active .preview-image) {
+  transform: scale(1);
+}
+
+:global(.preview-close-btn) {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+}
+
+:global(.preview-close-btn:hover) {
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(90deg);
+}
+
+/* 滚动动画效果 */
+.info-section, .description-section, .gallery-section, .packages-section, .reviews-section {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeInUp 0.8s ease forwards;
+}
+
+.info-section {
+  animation-delay: 0.2s;
+}
+
+.packages-section {
+  animation-delay: 0.4s;
+}
+
+.description-section {
+  animation-delay: 0.6s;
+}
+
+.gallery-section {
+  animation-delay: 0.8s;
+}
+
+.reviews-section {
+  animation-delay: 1s;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

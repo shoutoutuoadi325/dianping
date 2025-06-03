@@ -31,9 +31,37 @@ public class OrderController {
             // 从请求体中获取必要的参数
             Long packageId = Long.valueOf(orderRequest.get("packageId").toString());
             Long merchantId = Long.valueOf(orderRequest.get("businessId").toString());
+            String invitationCode = orderRequest.get("invitationCode") != null ? orderRequest.get("invitationCode").toString() : null;
 
             // 创建订单
-            Order savedOrder = orderService.createOrder(userId, packageId, merchantId);
+            Order savedOrder = orderService.createOrder(userId, packageId, merchantId,invitationCode);
+
+            // 构造返回结果
+            Map<String, Object> response = new HashMap<>();
+            response.put("orderId", savedOrder.getId());
+            response.put("message", "订单创建成功");
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace(); // 打印错误堆栈便于调试
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "创建订单失败: " + e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @PostMapping("/with-invitation-code")
+    public ResponseEntity<?> createOrderWithInvitationCode(
+            @RequestHeader("UserId") Long userId,
+            @RequestBody Map<String, Object> orderRequest) {
+        try {
+            // 从请求体中获取必要的参数
+            Long packageId = Long.valueOf(orderRequest.get("packageId").toString());
+            Long merchantId = Long.valueOf(orderRequest.get("businessId").toString());
+            String invitationCode = orderRequest.get("invitationCode") != null ? orderRequest.get("invitationCode").toString() : null;
+
+            // 创建订单
+            Order savedOrder = orderService.createOrder(userId, packageId, merchantId, invitationCode);
 
             // 构造返回结果
             Map<String, Object> response = new HashMap<>();

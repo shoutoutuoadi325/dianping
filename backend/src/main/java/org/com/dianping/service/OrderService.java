@@ -11,6 +11,7 @@ import org.com.dianping.entity.Coupon;
 import org.com.dianping.entity.Merchant;
 import org.com.dianping.entity.Order;
 import org.com.dianping.entity.PackageGroup;
+import org.com.dianping.entity.User;
 import org.com.dianping.repository.CouponRepository;
 import org.com.dianping.repository.MerchantRepository;
 import org.com.dianping.repository.OrderRepository;
@@ -27,18 +28,24 @@ public class OrderService {
     private final CouponRepository couponRepository;
     private final MerchantRepository merchantRepository;
     private final UserRepository userRepository;
+    private final InvitationService invitationService;  // 添加依赖
+
     public OrderService(OrderRepository orderRepository,
                         PackageGroupRepository packageGroupRepository,
-                        CouponRepository couponRepository, MerchantRepository merchantRepository, UserRepository userRepository) {
+                        CouponRepository couponRepository, 
+                        MerchantRepository merchantRepository, 
+                        UserRepository userRepository,
+                        InvitationService invitationService) {  // 修改构造函数
         this.orderRepository = orderRepository;
         this.packageGroupRepository = packageGroupRepository;
         this.couponRepository = couponRepository;
         this.merchantRepository = merchantRepository;
         this.userRepository = userRepository;
+        this.invitationService = invitationService;
     }
 
     @Transactional
-    public Order createOrder(Long userId, Long packageId, Long merchantId) {
+    public Order createOrder(Long userId, Long packageId, Long merchantId, String invitationCode) {
         // 获取套餐信息和商家信息
         PackageGroup pkg = packageGroupRepository.findById(packageId)
                 .orElseThrow(() -> new RuntimeException("套餐不存在"));
@@ -83,10 +90,50 @@ public class OrderService {
         // 更新套餐销量
         packageGroupRepository.incrementSales(packageId);
 
-        // 如果使用了优惠券，需要标记优惠券为已使用
+        // 处理优惠券使用
         if (couponUsing.coupon != null) {
-           CouponService couponService = new CouponService(couponRepository, userRepository);
-           couponService.useCoupon(couponUsing.coupon.getId()); // 调用 CouponService 中的方法来标记优惠券为已使用
+            CouponService couponService = new CouponService(couponRepository, userRepository);
+            couponService.useCoupon(couponUsing.coupon.getId());
+        }
+
+        // 处理邀请记录 - 如果是被邀请的用户下单
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+        if (user.getInviterId() != null) {
+            // 使用invitationService处理邀请记录和奖励
+            invitationService.processInvitationReward(
+                user.getInviterId(),  // 邀请人ID
+                userId,               // 被邀请人ID
+                savedOrder.getFinalPrice()  // 订单实付金额
+            );
+        }
+
+        // 处理邀请码
+        if (invitationCode != null && !invitationCode.isEmpty()) {
+            // 检查是否是自己的邀请码
+            User inviter = userRepository.findByInvitationCode(invitationCode)
+                    .orElseThrow(() -> new RuntimeException("无效的邀请码"));
+            if (inviter.getId().equals(userId)) {
+                throw new RuntimeException("不能使用自己的邀请码");
+            }
+
+            // 检查是否已经使用过任何邀请码
+            if (user.getInviterId() != null) {
+                throw new RuntimeException("已经使用过邀请码");
+            }
+
+            // 设置邀请关系（无论订单金额是否满足要求，都记录邀请关系）
+            user.setInviterId(inviter.getId());
+            userRepository.save(user);
+            
+            // 只有订单金额大于10元时才记录邀请记录并处理奖励
+            if (savedOrder.getFinalPrice() > 10.0) {
+                invitationService.processInvitationReward(
+                    inviter.getId(),
+                    userId,
+                    savedOrder.getFinalPrice()
+                );
+            }
         }
 
         return savedOrder;
@@ -159,7 +206,7 @@ public class OrderService {
                 }
                 break;
             case "折扣":
-                discount = originalPrice * (1 - coupon.getValue()/10);
+                discount = Math.min(originalPrice * (1 - coupon.getValue()/10), coupon.getMaxAmount());
                 break;
             case "立减":
                 discount = Math.min(coupon.getValue(), originalPrice);

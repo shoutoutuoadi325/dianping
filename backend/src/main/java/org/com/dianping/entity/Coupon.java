@@ -36,6 +36,9 @@ public class Coupon {
     @Column(name = "value", nullable = true)
     private Double value;  // 优惠券的值，例如：满减券的减额金额，折扣券的折扣比例 
 
+    @Column(name = "MaxAmount", nullable = true)
+    private Double maxAmount;  // 最大减免
+
     @Column(name = "minAmount", nullable = true)
     private Double minAmount;  // 最小消费金额，例如：满30减8元的30
     @Column(name = "expire_time", nullable = true)
@@ -93,6 +96,10 @@ public class Coupon {
         return expireTime;
     }
 
+    public void setMinAmount(Double minAmount) {
+        this.minAmount = minAmount;
+    }
+
     public void setExpireTime(LocalDateTime expireTime) {
         this.expireTime = expireTime;
     }
@@ -113,5 +120,11 @@ public class Coupon {
     }
     public void setMiniAmount(Double miniAmount) {
         this.minAmount = miniAmount;
+    }
+    public Double getMaxAmount() {
+        return maxAmount;
+    }
+    public void setMaxAmount(Double maxAmount) {
+        this.maxAmount = maxAmount;
     }
 }

@@ -8,7 +8,8 @@ public record CouponRequest(
     String shop_id,
     String type,
     Integer value,
-    Integer miniAmount,
-    String expireTime
+    Double miniAmount,
+    String expireTime,
+    Double maxAmount
 ) {
 }

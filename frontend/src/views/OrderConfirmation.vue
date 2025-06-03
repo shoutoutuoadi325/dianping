@@ -47,6 +47,27 @@
         </div>
       </div>
 
+      <!-- 添加邀请码输入区域 -->
+      <div class="order-section">
+        <div class="section-header">
+          <h2>邀请码</h2>
+        </div>
+        <div class="invitation-input">
+          <input 
+            type="text" 
+            v-model="invitationCode"
+            placeholder="请输入邀请码（选填）"
+            @input="validateInvitationCode"
+          >
+          <span class="invitation-message" :class="{ error: invitationError }">
+            {{ invitationMessage }}
+          </span>
+          <span class="invitation-hint" v-if="finalPrice <= 10">
+            订单金额需大于10元才是有效邀请
+          </span>
+        </div>
+      </div>
+
       <div class="order-section price-calculation">
         <div class="price-item">
           <span>套餐金额</span>
@@ -167,6 +188,10 @@ export default {
       showCouponModal: false,
       userInfo: null,
       submitting: false, // 防止重复提交
+      invitationCode: '',
+      invitationMessage: '',
+      invitationError: false,
+      invitationValid: false
     }
   },
   computed: {
@@ -339,7 +364,7 @@ export default {
          case '满减': return 'fixed-amount-text';
          case '立减': return 'fix-to-amount-text';
          case '折扣': return 'percentage-text';
-         case '免单': return 'free-order-text'; // 新增免单券的样式类
+         case '免单': return 'free-order-text'; // 新增免单券的颜色
          case '秒杀': return 'flash-sale-text'; // 新增秒杀券的样式类
          default: return '';
        }
@@ -392,8 +417,64 @@ export default {
     goBack() {
       this.$router.go(-1);
     },
+    async validateInvitationCode() {
+      if (!this.invitationCode) {
+        this.invitationMessage = '';
+        this.invitationError = false;
+        this.invitationValid = false;
+        return;
+      }
+
+      // 检查是否是自己的邀请码
+      if (this.invitationCode === this.userInfo.invitationCode) {
+        this.invitationMessage = '不能使用自己的邀请码';
+        this.invitationError = true;
+        this.invitationValid = false;
+        return;
+      }
+      
+      try {
+        const response = await axios.get('/users/validate-invitation', {
+          params: {
+            invitationCode: this.invitationCode
+          }
+        });
+        
+        if (response.data.valid) {
+          this.invitationMessage = `邀请人: ${response.data.inviterUsername}`;
+          this.invitationError = false;
+          this.invitationValid = true;
+        } else {
+          this.invitationMessage = response.data.message;
+          this.invitationError = true;
+          this.invitationValid = false;
+        }
+
+        // 如果订单金额小于10元，添加提示信息
+        if (this.finalPrice <= 10 && this.invitationValid) {
+          this.invitationMessage += '';
+        }
+      } catch (error) {
+        this.invitationMessage = error.response?.data?.message || '验证邀请码失败';
+        this.invitationError = true;
+        this.invitationValid = false;
+      }
+    },
     async submitOrder() {
       if (this.submitting) return;
+      
+      // 修改邀请码相关验证
+      if (this.invitationCode) {
+        if (this.invitationCode === this.userInfo.invitationCode) {
+          this.$message.error('不能使用自己的邀请码');
+          return;
+        }
+        if (!this.invitationValid) {
+          this.$message.error('请输入有效的邀请码');
+          return;
+        }
+      }
+
       this.submitting = true;
 
       try {
@@ -403,7 +484,8 @@ export default {
           businessId: this.merchantData.id,
           couponId: this.selectedCoupon ? this.selectedCoupon.id : null,
           discount: this.discount,
-          finalPrice: this.finalPrice
+          finalPrice: this.finalPrice,
+          invitationCode: this.invitationValid ? this.invitationCode : null
         };
 
         console.log('提交的订单数据:', orderData); // 添加日志
@@ -455,7 +537,7 @@ export default {
       }
 
       // 检查过期时间
-      if (coupon.expireTime) {
+        if (coupon.expireTime) {
         const now = new Date();
         const expireTime = new Date(coupon.expireTime);
         if (expireTime < now) {
@@ -991,6 +1073,41 @@ export default {
 
 .coupon-option.disabled {
   opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.invitation-input {
+  margin-top: 10px;
+}
+
+.invitation-input input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.invitation-message {
+  display: block;
+  font-size: 12px;
+  margin-top: 5px;
+  color: #52c41a;
+}
+
+.invitation-message.error {
+  color: #ff4d4f;
+}
+
+.invitation-hint {
+  display: block;
+  font-size: 12px;
+  color: #4d7aff;
+  margin-top: 5px;
+}
+
+.invitation-input input:disabled {
+  background-color: #f5f5f5;
   cursor: not-allowed;
 }
 </style>
